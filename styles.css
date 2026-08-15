@@ -39,22 +39,35 @@
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
-  /* ---------------- ANIMATED GRID BACKGROUND ---------------- */
+  /* ---------------- ANIMATED GRID BACKGROUND ----------------
+     Antes esto animaba `background-position`, lo que obliga al navegador
+     a repintar TODA la pantalla en cada frame (costoso). Ahora el patrón
+     vive en un pseudo-elemento más grande que se mueve con `transform`
+     (translate3d), que va por GPU/compositor y es mucho más liviano.
+     El "mask" que difumina los bordes se queda fijo en el contenedor
+     exterior, que no se anima. */
   .grid-bg{
     position:fixed; inset:0;
     z-index:0;
     pointer-events:none;
+    overflow:hidden;
+    -webkit-mask-image:radial-gradient(ellipse 90% 70% at 50% 30%, #000 40%, transparent 90%);
+    mask-image:radial-gradient(ellipse 90% 70% at 50% 30%, #000 40%, transparent 90%);
+  }
+  .grid-bg::before{
+    content:"";
+    position:absolute;
+    top:-56px; left:-56px; right:-56px; bottom:-56px;
     background-image:
       linear-gradient(rgba(155,93,229,.09) 1px, transparent 1px),
       linear-gradient(90deg, rgba(155,93,229,.09) 1px, transparent 1px);
     background-size:56px 56px;
-    -webkit-mask-image:radial-gradient(ellipse 90% 70% at 50% 30%, #000 40%, transparent 90%);
-    mask-image:radial-gradient(ellipse 90% 70% at 50% 30%, #000 40%, transparent 90%);
     animation:gridDrift 26s linear infinite;
+    will-change:transform;
   }
   @keyframes gridDrift{
-    0%{ background-position:0 0, 0 0; }
-    100%{ background-position:56px 112px, 56px 112px; }
+    0%{ transform:translate3d(0,0,0); }
+    100%{ transform:translate3d(-56px,-112px,0); }
   }
 
   a{ color:inherit; text-decoration:none; }
@@ -160,6 +173,71 @@
     0%,100%{ transform:translate(-50%,-58%) scale(1); }
     50%{ transform:translate(-50%,-58%) scale(1.08); }
   }
+  /* ---------------- ENTRADA SUAVE DEL TEXTO DEL HERO (al cargar la página) ----------------
+     El eyebrow y el título usan un efecto "máquina de escribir" hecho con JS
+     (script.js envuelve cada letra en un <span class="tw-c">); si JS no
+     corre, el texto normal se ve igual, sin animación (no depende de JS
+     para ser visible). El subtítulo y los botones usan un fade+blur suave
+     con un pequeño delay por defecto que JS ajusta con precisión según
+     cuánto tarde el "tipeo" de arriba. */
+  @keyframes twChar{
+    0%{ opacity:0; transform:translateY(8px); }
+    100%{ opacity:1; transform:translateY(0); }
+  }
+  .tw-c{
+    display:inline-block;
+    opacity:0;
+    animation:twChar .4s cubic-bezier(.16,1,.3,1) forwards;
+    will-change:opacity, transform;
+  }
+  /* el degradado del título vive en cada letra, no en el <h1> completo,
+     porque cada letra ahora es su propio elemento */
+  h1.wordmark .tw-c{
+    background:inherit;
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+
+  @keyframes heroReveal{
+    0%{ opacity:0; transform:translateY(24px); filter:blur(6px); }
+    100%{ opacity:1; transform:translateY(0); filter:blur(0); }
+  }
+  /* keyframes propio para scroll-cue: mantiene su centrado horizontal
+     (left:50% + translateX(-50%)) mientras entra desde abajo */
+  @keyframes scrollCueReveal{
+    0%{ opacity:0; transform:translate(-50%, 24px); filter:blur(6px); }
+    100%{ opacity:1; transform:translate(-50%, 0); filter:blur(0); }
+  }
+  .hero-sub, .hero-ctas{
+    opacity:0;
+    animation:heroReveal 1s cubic-bezier(.16,1,.3,1) both;
+  }
+  .hero-sub{ animation-delay:1.4s; }
+  .hero-ctas{ animation-delay:1.6s; }
+
+  /* ---------------- MOSTRAR / OCULTAR TEXTO DEL HERO AL SCROLLEAR ---------------- */
+  .hero-copy{
+    /* SIN position:relative a propósito: así .scroll-cue (position:absolute)
+       sigue anclado a .hero (su ancestro posicionado real) y no a este
+       contenedor, que solo envuelve el texto para poder mostrarlo/ocultarlo. */
+    display:flex; flex-direction:column; align-items:center;
+    transition:opacity .5s var(--ease);
+  }
+  .hero-copy.hc-hidden{
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .4s var(--ease);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .tw-c{ animation:none; opacity:1; }
+    .hero-sub, .hero-ctas, .scroll-cue{
+      animation:none; opacity:1;
+    }
+    .hero-copy, .hero-copy.hc-hidden{ transition:none; opacity:1; }
+  }
+
   .eyebrow{
     font-family:var(--font-mono);
     font-size:12.5px;
@@ -230,7 +308,28 @@
     border:1px solid rgba(255,255,255,.10);
     box-shadow:0 30px 60px -20px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.03);
     z-index:1;
-    animation:floaty 7s ease-in-out infinite;
+    opacity:0;
+    will-change:transform, opacity;
+    /* Cada tarjeta corre DOS animaciones en cadena sobre el mismo elemento:
+       1) entrada con zoom-in suave (floatCardNIn): opacity + scale + rotación
+          fija, una sola vez.
+       2) flote infinito (floatCardN): la MISMA rotación fija + translateY,
+          arranca justo cuando termina la entrada (su delay = duración +
+          delay de la entrada), así no hay salto entre una y otra. */
+  }
+  /* Resplandor suave detrás de cada tarjeta flotante, para que se lean
+     mejor sobre el fondo oscuro (se mueve junto con la tarjeta porque
+     es un pseudo-elemento hijo) */
+  .hero-float::before{
+    content:"";
+    position:absolute;
+    inset:-26px;
+    z-index:-1;
+    border-radius:32px;
+    background:radial-gradient(circle at center, rgba(155,93,229,.38), rgba(91,33,182,.12) 55%, transparent 75%);
+    filter:blur(26px);
+    opacity:.85;
+    pointer-events:none;
   }
   .hero-float video, .hero-float .f-thumb{
     width:100%; height:100%; object-fit:cover; display:block;
@@ -245,17 +344,61 @@
     font-size:10px; letter-spacing:.1em; text-transform:uppercase;
     color:var(--text-muted); text-align:center; padding:0 14px;
   }
-  .hf-h{ width:280px; aspect-ratio:16/9; }
-  .hf-v{ width:170px; aspect-ratio:9/16; }
+  .hf-h{ width:420px; aspect-ratio:16/9; }
+  .hf-v{ width:255px; aspect-ratio:9/16; }
 
-  .hf-1{ top:9%;  left:4%;   transform:rotate(-9deg);  animation-delay:0s; }
-  .hf-2{ top:6%;  right:5%;  transform:rotate(7deg);   animation-delay:1.4s; }
-  .hf-3{ bottom:7%; left:6%; transform:rotate(6deg);   animation-delay:.7s; }
-  .hf-4{ bottom:5%; right:8%; transform:rotate(-6deg); animation-delay:2.1s; }
+  .hf-1{ top:9%;  left:2%;   animation-name:floatCard1In, floatCard1; }
+  .hf-2{ top:6%;  right:2%;  animation-name:floatCard2In, floatCard2; }
+  .hf-3{ bottom:7%; left:3%; animation-name:floatCard3In, floatCard3; }
+  .hf-4{ bottom:5%; right:4%; animation-name:floatCard4In, floatCard4; }
 
-  @keyframes floaty{
-    0%,100%{ margin-top:0px; }
-    50%{ margin-top:-14px; }
+  .hf-1, .hf-2, .hf-3, .hf-4{
+    animation-timing-function:cubic-bezier(.16,1,.3,1), ease-in-out;
+    animation-iteration-count:1, infinite;
+    animation-fill-mode:forwards, none;
+  }
+  /* entrada: .95s de duración → el flote de cada tarjeta arranca justo
+     cuando su entrada termina (delay de entrada + .95s) */
+  .hf-1{ animation-duration:.95s, 7.5s; animation-delay:.15s, 1.1s; }
+  .hf-2{ animation-duration:.95s, 8.5s; animation-delay:.3s,  1.25s; }
+  .hf-3{ animation-duration:.95s, 6.8s; animation-delay:.45s, 1.4s; }
+  .hf-4{ animation-duration:.95s, 7.8s; animation-delay:.6s,  1.55s; }
+
+  /* Entrada: zoom-in suave + leve desenfoque que se disipa, terminando
+     exactamente en la misma rotación/posición donde el flote continúa */
+  @keyframes floatCard1In{
+    0%{ opacity:0; transform:rotate(-9deg) scale(.8) translateY(14px); filter:blur(5px); }
+    100%{ opacity:1; transform:rotate(-9deg) scale(1) translateY(0); filter:blur(0); }
+  }
+  @keyframes floatCard2In{
+    0%{ opacity:0; transform:rotate(7deg) scale(.8) translateY(14px); filter:blur(5px); }
+    100%{ opacity:1; transform:rotate(7deg) scale(1) translateY(0); filter:blur(0); }
+  }
+  @keyframes floatCard3In{
+    0%{ opacity:0; transform:rotate(6deg) scale(.8) translateY(14px); filter:blur(5px); }
+    100%{ opacity:1; transform:rotate(6deg) scale(1) translateY(0); filter:blur(0); }
+  }
+  @keyframes floatCard4In{
+    0%{ opacity:0; transform:rotate(-6deg) scale(.8) translateY(14px); filter:blur(5px); }
+    100%{ opacity:1; transform:rotate(-6deg) scale(1) translateY(0); filter:blur(0); }
+  }
+
+  /* Rotación fija de cada tarjeta + flote vertical infinito */
+  @keyframes floatCard1{
+    0%,100%{ transform:rotate(-9deg) translateY(0); }
+    50%{ transform:rotate(-9deg) translateY(-20px); }
+  }
+  @keyframes floatCard2{
+    0%,100%{ transform:rotate(7deg) translateY(0); }
+    50%{ transform:rotate(7deg) translateY(-20px); }
+  }
+  @keyframes floatCard3{
+    0%,100%{ transform:rotate(6deg) translateY(0); }
+    50%{ transform:rotate(6deg) translateY(-20px); }
+  }
+  @keyframes floatCard4{
+    0%,100%{ transform:rotate(-6deg) translateY(0); }
+    50%{ transform:rotate(-6deg) translateY(-20px); }
   }
 
   @media (max-width:1150px){
@@ -263,10 +406,13 @@
   }
 
   .scroll-cue{
-    position:absolute; bottom:38px; left:50%; transform:translateX(-50%);
+    position:absolute; bottom:38px; left:50%;
     display:flex; flex-direction:column; align-items:center; gap:10px;
     color:var(--text-muted); font-size:11px; letter-spacing:.18em; text-transform:uppercase;
     z-index:2;
+    opacity:0;
+    transform:translate(-50%, 24px);
+    animation:scrollCueReveal 1s cubic-bezier(.16,1,.3,1) 1.85s both;
   }
   .scroll-cue .line{
     width:1px; height:36px;
@@ -305,7 +451,7 @@
   .reveal.in{ opacity:1; transform:translateY(0); }
 
   /* ---------------- TRABAJOS ---------------- */
-  #trabajos{ padding:150px 0 100px; }
+  #trabajos{ padding:150px 0 100px; content-visibility:auto; contain-intrinsic-size:1200px; }
 
   .format-label{
     display:flex; align-items:center; gap:12px;
@@ -413,7 +559,7 @@
   .card:hover .card-caption{ opacity:1; transform:translateY(0); }
 
   /* ---------------- MARQUESINA DE CLIPS ---------------- */
-  #marquesina{ padding:70px 0 20px; overflow:hidden; }
+  #marquesina{ padding:70px 0 20px; overflow:hidden; content-visibility:auto; contain-intrinsic-size:420px; }
   .marquee-viewport{
     overflow:hidden;
     width:100%;
@@ -484,7 +630,7 @@
   }
 
   /* ---------------- SOBRE MÍ ---------------- */
-  #sobre{ padding:90px 0; border-top:1px solid var(--hairline); }
+  #sobre{ padding:90px 0; border-top:1px solid var(--hairline); content-visibility:auto; contain-intrinsic-size:500px; }
   .about-grid{
     display:grid;
     grid-template-columns:1.1fr .9fr;
@@ -530,6 +676,8 @@
     border-top:1px solid var(--hairline);
     position:relative;
     overflow:hidden;
+    content-visibility:auto;
+    contain-intrinsic-size:420px;
   }
   #contacto .glow{ opacity:.7; }
   #contacto .eyebrow{ justify-content:center; margin-left:auto; margin-right:auto; }
@@ -697,7 +845,7 @@
   .card:hover .sound-hint{ opacity:1; transform:translateY(0); }
 
   @media (prefers-reduced-motion: reduce){
-    .grid-bg, .hero-float, .marquee-track, .glow{ animation:none !important; }
+    .grid-bg::before, .hero-float, .marquee-track, .glow{ animation:none !important; opacity:1 !important; }
     .marquee-track{ transform:none !important; }
     *{ scroll-behavior:auto !important; }
   }

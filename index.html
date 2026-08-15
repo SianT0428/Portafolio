@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SIAN T — Editor de Video</title>
-<meta name="description" content="SIan T — Editor de video especializado en YouTube, Streamers y formato vertical (TikTok / Instagram).">
+<meta name="description" content="Sian T — Editor de video especializado en YouTube, Streamers y formato vertical (TikTok / Instagram).">
 
 <!-- EDITAR AQUÍ: tu ícono de pestaña (favicon). Sube el archivo a la carpeta "images/" -->
 <link rel="icon" type="image/png" href="images/favicon.png?=2">
@@ -65,44 +65,47 @@
 
   <!-- EDITAR AQUÍ: Clips flotantes del hero (loop, sin sonido) -->
   <div class="hero-float hf-h hf-1">
-    <video autoplay muted loop playsinline>
+    <video muted loop playsinline preload="none">
       <source src="videos/hero-h-1.mp4" type="video/mp4">
     </video>
     <div class="f-thumb"><span>Clip horizontal<br>(reemplazar)</span></div>
   </div>
 
   <div class="hero-float hf-v hf-2">
-    <video autoplay muted loop playsinline>
+    <video muted loop playsinline preload="none">
       <source src="videos/hero-v-1.mp4" type="video/mp4">
     </video>
     <div class="f-thumb"><span>Clip vertical<br>(reemplazar)</span></div>
   </div>
 
   <div class="hero-float hf-v hf-3">
-    <video autoplay muted loop playsinline>
+    <video muted loop playsinline preload="none">
       <source src="videos/hero-v-2.mp4" type="video/mp4">
     </video>
     <div class="f-thumb"><span>Clip vertical<br>(reemplazar)</span></div>
   </div>
 
   <div class="hero-float hf-h hf-4">
-    <video autoplay muted loop playsinline>
+    <video muted loop playsinline preload="none">
       <source src="videos/hero-h-2.mp4" type="video/mp4">
     </video>
     <div class="f-thumb"><span>Clip horizontal<br>(reemplazar)</span></div>
   </div>
 
-  <div class="eyebrow">Editor de Video & Director Creativo</div>
-  <h1 class="wordmark">SIAN T</h1>
-  <p class="hero-sub">
-    Edición dinámica para <b>YouTubers</b>, <b>Streamers</b> y <b>Formato Vertical</b>
-    (TikTok / Instagram). 
-  </p>
-  <div class="hero-ctas">
-    <a href="#trabajos" class="btn btn-primary">Ver trabajos</a>
-    <a href="#contacto" class="btn btn-ghost">Contáctame</a>
+  <!-- Texto inicial: se agrupa para poder ocultarlo/mostrarlo al scrollear -->
+  <div class="hero-copy" id="heroCopy">
+    <div class="eyebrow">Editor de Video & Director Creativo</div>
+    <h1 class="wordmark">SIAN T</h1>
+    <p class="hero-sub">
+      Edición dinámica para <b>YouTubers</b>, <b>Streamers</b> y <b>Formato Vertical</b>
+      (TikTok / Instagram). 
+    </p>
+    <div class="hero-ctas">
+      <a href="#trabajos" class="btn btn-primary">Ver trabajos</a>
+      <a href="#contacto" class="btn btn-ghost">Contáctame</a>
+    </div>
+    <div class="scroll-cue"><span>Scroll</span><div class="line"></div></div>
   </div>
-  <div class="scroll-cue"><span>Scroll</span><div class="line"></div></div>
 </section>
 
 <!-- ================= MARQUESINA DE CLIPS ================= -->
@@ -118,61 +121,61 @@
       <!-- EDITAR AQUÍ: 10 clips de la marquesina (se duplican por JS para el loop infinito) -->
 
       <div class="clip-pill">
-        <video muted loop autoplay playsinline><source src="videos/clip-01.mp4" type="video/mp4"></video>
+        <video muted loop playsinline preload="none"><source src="videos/clip-01.mp4" type="video/mp4"></video>
         <div class="cp-thumb"><span>Clip 1</span></div>
         <div class="clip-badge"><span class="c-style">Apple Motion Style</span><span class="c-tool">After Effects</span></div>
       </div>
 
       <div class="clip-pill">
-        <video muted loop autoplay playsinline><source src="videos/clip-02.mp4" type="video/mp4"></video>
+        <video muted loop playsinline preload="none"><source src="videos/clip-02.mp4" type="video/mp4"></video>
         <div class="cp-thumb"><span>Clip 2</span></div>
         <div class="clip-badge"><span class="c-style">Texto Animado</span><span class="c-tool">After Effects</span></div>
       </div>
 
       <div class="clip-pill">
-        <video muted loop autoplay playsinline><source src="videos/clip-03.mp4" type="video/mp4"></video>
+        <video muted loop playsinline preload="none"><source src="videos/clip-03.mp4" type="video/mp4"></video>
         <div class="cp-thumb"><span>Clip 3</span></div>
         <div class="clip-badge"><span class="c-style">Product Animation</span><span class="c-tool">After Effects</span></div>
       </div>
 
       <div class="clip-pill">
-        <video muted loop autoplay playsinline><source src="videos/clip-04.mp4" type="video/mp4"></video>
+        <video muted loop playsinline preload="none"><source src="videos/clip-04.mp4" type="video/mp4"></video>
         <div class="cp-thumb"><span>Clip 4</span></div>
         <div class="clip-badge"><span class="c-style">Parallax Animation</span><span class="c-tool">After Effects</span></div>
       </div>
 
       <div class="clip-pill">
-        <video muted loop autoplay playsinline><source src="videos/clip-05.mp4" type="video/mp4"></video>
+        <video muted loop playsinline preload="none"><source src="videos/clip-05.mp4" type="video/mp4"></video>
         <div class="cp-thumb"><span>Clip 5</span></div>
         <div class="clip-badge"><span class="c-style">Clips Gaming</span><span class="c-tool">Premiere Pro</span></div>
       </div>
 
       <div class="clip-pill">
-        <video muted loop autoplay playsinline><source src="videos/clip-06.mp4" type="video/mp4"></video>
+        <video muted loop playsinline preload="none"><source src="videos/clip-06.mp4" type="video/mp4"></video>
         <div class="cp-thumb"><span>Clip 6</span></div>
         <div class="clip-badge"><span class="c-style">Podcast Clips</span><span class="c-tool">Premiere Pro</span></div>
       </div>
 
       <div class="clip-pill">
-        <video muted loop autoplay playsinline><source src="videos/clip-07.mp4" type="video/mp4"></video>
+        <video muted loop playsinline preload="none"><source src="videos/clip-07.mp4" type="video/mp4"></video>
         <div class="cp-thumb"><span>Clip 7</span></div>
         <div class="clip-badge"><span class="c-style">Animaciones 2D</span><span class="c-tool">After Effects</span></div>
       </div>
 
       <div class="clip-pill">
-        <video muted loop autoplay playsinline><source src="videos/clip-08.mp4" type="video/mp4"></video>
+        <video muted loop playsinline preload="none"><source src="videos/clip-08.mp4" type="video/mp4"></video>
         <div class="cp-thumb"><span>Clip 8</span></div>
         <div class="clip-badge"><span class="c-style">Animated Background</span><span class="c-tool">After Effects</span></div>
       </div>
 
       <div class="clip-pill">
-        <video muted loop autoplay playsinline><source src="videos/clip-09.mp4" type="video/mp4"></video>
+        <video muted loop playsinline preload="none"><source src="videos/clip-09.mp4" type="video/mp4"></video>
         <div class="cp-thumb"><span>Clip 9</span></div>
         <div class="clip-badge"><span class="c-style">Camera Tracking</span><span class="c-tool">After Effects</span></div>
       </div>
 
       <div class="clip-pill">
-        <video muted loop autoplay playsinline><source src="videos/clip-10.mp4" type="video/mp4"></video>
+        <video muted loop playsinline preload="none"><source src="videos/clip-10.mp4" type="video/mp4"></video>
         <div class="cp-thumb"><span>Clip 10</span></div>
         <div class="clip-badge"><span class="c-style">Screen Overlay</span><span class="c-tool">Premiere Pro</span></div>
       </div>
