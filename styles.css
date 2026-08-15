@@ -113,6 +113,7 @@
     width:7px; height:7px; border-radius:50%;
     background:var(--violet);
     box-shadow:0 0 12px 2px var(--violet);
+    object-fit:cover; /* por si reemplazas el <span> por una <img> */
   }
   .nav-links{ display:flex; align-items:center; gap:36px; }
   .nav-links a{
