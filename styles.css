@@ -174,29 +174,48 @@
     50%{ transform:translate(-50%,-58%) scale(1.08); }
   }
   /* ---------------- ENTRADA SUAVE DEL TEXTO DEL HERO (al cargar la página) ----------------
-     El eyebrow y el título usan un efecto "máquina de escribir" hecho con JS
-     (script.js envuelve cada letra en un <span class="tw-c">); si JS no
-     corre, el texto normal se ve igual, sin animación (no depende de JS
-     para ser visible). El subtítulo y los botones usan un fade+blur suave
-     con un pequeño delay por defecto que JS ajusta con precisión según
-     cuánto tarde el "tipeo" de arriba. */
-  @keyframes twChar{
-    0%{ opacity:0; transform:translateY(8px); }
-    100%{ opacity:1; transform:translateY(0); }
-  }
-  .tw-c{
+     REESCRITO DESDE CERO. El enfoque anterior (envolver cada letra en un
+     <span> y animarle opacity/transform mientras además tenía
+     -webkit-background-clip:text) causaba glitches de repintado en
+     WebKit sin importar cuántas veces se ajustara (letra fantasma, o
+     directamente texto invisible). La causa de fondo era esa: animar
+     CUALQUIER cosa sobre el propio elemento que recorta el degradado es
+     fràgil entre navegadores.
+
+     Nuevo enfoque ("reveal" clásico por ancho, sin tocar el texto):
+     - El degradado y el -webkit-background-clip:text del wordmark quedan
+       100% ESTÁTICOS (ver regla de h1.wordmark más abajo) — nunca se
+       animan, nunca cambian. Cero riesgo de glitch de recorte.
+     - JS (script.js) envuelve el contenido del elemento en UN solo
+       <span class="tw-reveal">, mide su ancho real (scrollWidth) y anima
+       la propiedad "width" desde 0 hasta ese ancho con overflow:hidden,
+       usando steps(N) para que el avance se vea "a saltos" de carácter,
+       simulando tipeo. Es la técnica de "typewriter" en CSS más antigua
+       y compatible que existe: no depende de recortar texto con
+       degradados, así que no puede volver a romperse por esto.
+     - Si el usuario prefiere menos movimiento, ni siquiera se crea el
+       span: el texto se queda tal cual, visible, sin animar (ver JS). */
+  .tw-reveal{
     display:inline-block;
-    opacity:0;
-    animation:twChar .4s cubic-bezier(.16,1,.3,1) forwards;
-    will-change:opacity, transform;
+    overflow:hidden;
+    white-space:nowrap;
+    vertical-align:top;
+    max-width:100%;
   }
-  /* el degradado del título vive en cada letra, no en el <h1> completo,
-     porque cada letra ahora es su propio elemento */
-  h1.wordmark .tw-c{
-    background:inherit;
+
+  h1.wordmark{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:clamp(72px, 15vw, 168px);
+    line-height:.92;
+    letter-spacing:-.03em;
+    word-spacing:.28em; /* separa visualmente "SIAN" de "T" */
+    background:linear-gradient(180deg, #FFFFFF 0%, #EDE7F6 40%, var(--violet-soft) 100%);
     -webkit-background-clip:text;
     background-clip:text;
     color:transparent;
+    z-index:2;
+    position:relative; /* necesario para que z-index tenga efecto (ver fix más abajo) */
   }
 
   @keyframes heroReveal{
@@ -216,55 +235,42 @@
   .hero-sub{ animation-delay:1.4s; }
   .hero-ctas{ animation-delay:1.6s; }
 
-  /* ---------------- MOSTRAR / OCULTAR TEXTO DEL HERO AL SCROLLEAR ---------------- */
+  /* ---------------- MOSTRAR / OCULTAR TEXTO DEL HERO AL SCROLLEAR ----------------
+     El opacity se fija directamente desde JS (script.js) en cada frame de
+     scroll, en proporción a cuánto ha bajado el usuario -> por eso NO lleva
+     transition: así el desvanecido es 1:1 con la posición del scroll (gradual
+     en ambas direcciones) y no una animación de tiempo fijo. */
   .hero-copy{
     /* SIN position:relative a propósito: así .scroll-cue (position:absolute)
        sigue anclado a .hero (su ancestro posicionado real) y no a este
        contenedor, que solo envuelve el texto para poder mostrarlo/ocultarlo. */
     display:flex; flex-direction:column; align-items:center;
-    transition:opacity .5s var(--ease);
-  }
-  .hero-copy.hc-hidden{
-    opacity:0;
-    pointer-events:none;
-    transition:opacity .4s var(--ease);
+    will-change:opacity;
   }
 
   @media (prefers-reduced-motion: reduce){
-    .tw-c{ animation:none; opacity:1; }
     .hero-sub, .hero-ctas, .scroll-cue{
       animation:none; opacity:1;
     }
-    .hero-copy, .hero-copy.hc-hidden{ transition:none; opacity:1; }
+    .hero-copy{ opacity:1 !important; }
   }
 
   .eyebrow{
     font-family:var(--font-mono);
     font-size:12.5px;
-    letter-spacing:.22em;
+    letter-spacing:.04em;
     text-transform:uppercase;
     color:var(--violet-soft);
     margin-bottom:22px;
     display:flex; align-items:center; gap:10px;
     z-index:2;
+    position:relative; /* necesario para que z-index tenga efecto (ver fix más abajo) */
   }
   .eyebrow::before, .eyebrow::after{
     content:""; width:26px; height:1px; background:linear-gradient(90deg, transparent, var(--violet-soft));
   }
   .eyebrow::after{ background:linear-gradient(90deg, var(--violet-soft), transparent); }
 
-  h1.wordmark{
-    font-family:var(--font-display);
-    font-weight:700;
-    font-size:clamp(72px, 15vw, 168px);
-    line-height:.92;
-    letter-spacing:-.03em;
-    background:linear-gradient(180deg, #FFFFFF 0%, #EDE7F6 40%, var(--violet-soft) 100%);
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
-    z-index:2;
-  }
   .hero-sub{
     margin-top:26px;
     font-size:clamp(16px, 2vw, 19px);
@@ -272,12 +278,14 @@
     max-width:560px;
     line-height:1.55;
     z-index:2;
+    position:relative;
   }
   .hero-sub b{ color:var(--text); font-weight:600; }
   .hero-ctas{
     margin-top:44px;
     display:flex; gap:14px; flex-wrap:wrap; justify-content:center;
     z-index:2;
+    position:relative;
   }
   .btn{
     padding:14px 30px;
@@ -307,7 +315,12 @@
     background:var(--surface);
     border:1px solid rgba(255,255,255,.10);
     box-shadow:0 30px 60px -20px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.03);
-    z-index:1;
+    z-index:1; /* BUG FIX: este z-index solo funciona frente al texto del hero
+                  porque ahora .eyebrow/h1.wordmark/.hero-sub/.hero-ctas también
+                  tienen position:relative (antes eran estáticos, así que su
+                  z-index:2 no tenía ningún efecto y estas tarjetas flotantes,
+                  al ser position:absolute, terminaban pintándose SIEMPRE
+                  encima del texto — eso causaba el glitch visual sobre la "S"). */
     opacity:0;
     will-change:transform, opacity;
     /* Cada tarjeta corre DOS animaciones en cadena sobre el mismo elemento:
@@ -428,8 +441,9 @@
 
   /* ---------------- SECTION HEADS ---------------- */
   .section-head{
-    display:flex; align-items:flex-end; justify-content:space-between;
-    gap:24px; flex-wrap:wrap;
+    display:flex; flex-direction:column; align-items:center;
+    text-align:center;
+    gap:14px;
     margin-bottom:52px;
   }
   .section-head h2{
@@ -440,7 +454,8 @@
   }
   .section-head p{
     color:var(--text-muted);
-    max-width:360px;
+    max-width:460px;
+    margin:0 auto;
     font-size:15px;
     line-height:1.6;
   }
@@ -456,12 +471,20 @@
   .format-label{
     display:flex; align-items:center; gap:12px;
     font-family:var(--font-mono);
-    font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    font-size:12px; letter-spacing:.04em; text-transform:uppercase;
     color:var(--text-muted);
     margin:0 0 22px;
   }
   .format-label .pill{
+    /* display + margin explícitos (en vez de depender de ser flex-item de
+       .format-label): el texto que sigue ahora queda envuelto en un
+       span.tw-reveal (ver script.js) que no es flex, así que el punto
+       necesita valerse por sí solo para conservar su tamaño y separación. */
+    display:inline-block;
     width:8px; height:8px; border-radius:50%; background:var(--violet);
+    margin-right:12px;
+    vertical-align:middle;
+    flex-shrink:0;
   }
   .format-block{ margin-bottom:80px; }
   .format-block:last-child{ margin-bottom:0; }
@@ -475,7 +498,9 @@
     display:grid;
     grid-template-columns:repeat(3, 1fr);
     gap:22px;
-    max-width:760px;
+    /* antes tenía max-width:760px (~239px por tarjeta); se quita el límite
+       para que ocupe todo el ancho de la fila, igual que .grid-h, dando
+       tarjetas ~50% más grandes (~358px) de lado a lado */
   }
 
   .card{
@@ -572,6 +597,13 @@
     gap:20px;
     width:max-content;
     animation:marqueeScroll 40s linear infinite;
+    /* Con ~20 videos reproduciéndose a la vez, mover el track sin promoverlo
+       a su propia capa GPU obliga al navegador a repintar todo ese contenido
+       en cada frame junto con el resto de la página -> se nota como trabas.
+       will-change:transform le avisa al navegador con anticipación que cree
+       una capa de composición aparte, así el scroll es solo "mover un
+       bitmap" y no compite con la decodificación de los videos. */
+    will-change:transform;
   }
   .marquee-track:hover{ animation-play-state:paused; }
   @keyframes marqueeScroll{

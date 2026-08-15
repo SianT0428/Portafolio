@@ -1,8 +1,18 @@
-// Marquesina: duplica los clips para lograr un loop infinito sin cortes
+// Marquesina: duplica los clips para lograr un loop infinito sin cortes.
+// OJO: se usa cloneNode (no track.innerHTML += track.innerHTML), porque
+// reasignar innerHTML obliga al navegador a destruir y re-crear TODOS los
+// elementos <video> originales desde cero (re-descargando/re-decodificando
+// los 10 clips), lo cual es muy costoso. cloneNode solo duplica el DOM,
+// sin tocar los videos originales.
 const track = document.getElementById('marqueeTrack');
 if(track){
-  track.innerHTML += track.innerHTML;
+  const originalClips = [...track.children];
+  const fragment = document.createDocumentFragment();
+  originalClips.forEach(clip => fragment.appendChild(clip.cloneNode(true)));
+  track.appendChild(fragment);
 }
+
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // ---------------------------------------------------------------
 // SCROLL: un solo listener (pasivo) para header + texto del hero,
@@ -13,6 +23,12 @@ const header = document.getElementById('siteHeader');
 const heroCopy = document.getElementById('heroCopy');
 let lastY = window.scrollY;
 let scrollTicking = false;
+
+// Cuánto hay que scrollear (en px) para que el texto del hero pase de
+// visible del todo a invisible del todo. Al ser una función continua de
+// la posición (no de la dirección), el desvanecido es gradual tanto al
+// bajar como al subir: es simplemente proporcional a cuánto se ha scrolleado.
+const HERO_FADE_RANGE = 320;
 
 function handleScroll(){
   const y = window.scrollY;
@@ -25,12 +41,15 @@ function handleScroll(){
     header.classList.remove('hide-nav'); // scrolling up -> mostrar header
   }
 
-  // Texto inicial del hero: se oculta al bajar, reaparece al subir
+  // Texto inicial del hero: se desvanece gradualmente al bajar y reaparece
+  // gradualmente al subir, en proporción directa a la posición de scroll.
   if(heroCopy){
-    if(goingDown && y > 80){
-      heroCopy.classList.add('hc-hidden');
+    if(prefersReducedMotion){
+      heroCopy.style.opacity = 1;
     }else{
-      heroCopy.classList.remove('hc-hidden');
+      const fade = 1 - Math.min(Math.max(y / HERO_FADE_RANGE, 0), 1);
+      heroCopy.style.opacity = fade;
+      heroCopy.style.pointerEvents = fade < 0.05 ? 'none' : 'auto';
     }
   }
 
@@ -51,43 +70,98 @@ const navLinks = document.getElementById('navLinks');
 navToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
 navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
 
-// Scroll reveal
+// Scroll reveal — además, la PRIMERA vez que un bloque entra en pantalla,
+// dispara el efecto "máquina de escribir" en cualquier texto marcado con
+// [data-tw] dentro de él (títulos de sección, labels, etc.), igual que en
+// el hero. typewriterize() está declarada más abajo pero funciona aquí por
+// hoisting de funciones.
 const revealEls = document.querySelectorAll('.reveal');
 const io = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      e.target.classList.add('in');
+      e.target.querySelectorAll('[data-tw]').forEach(el => {
+        if(!el.dataset.twDone){
+          el.dataset.twDone = '1';
+          typewriterize(el, 16, 60);
+        }
+      });
+      io.unobserve(e.target);
+    }
+  });
 }, { threshold: 0.15 });
 revealEls.forEach(el => io.observe(el));
 
 // ---------------------------------------------------------------
-// EFECTO "MÁQUINA DE ESCRIBIR" SUAVE para el eyebrow y el título del hero.
-// Envuelve cada letra en un <span class="tw-c"> con su propio delay de
-// animación (definido en styles.css), simulando un tipeo progresivo.
-// Si por algún motivo JS no corre, el texto queda intacto y visible
-// (no depende de esto para mostrarse).
+// EFECTO "MÁQUINA DE ESCRIBIR" — REESCRITO DESDE CERO.
+//
+// El enfoque anterior envolvía cada letra en su propio <span> y le
+// animaba opacity/transform mientras el texto tenía además
+// -webkit-background-clip:text (para el degradado). Esa combinación es
+// justo la que rompe en WebKit de formas distintas según cómo se ajuste
+// (letra fantasma, texto invisible, etc.) — así que en vez de seguir
+// parchándola, se cambia de técnica por completo.
+//
+// Nueva técnica ("reveal" por ancho, la más clásica y compatible que
+// existe para un efecto de tipeo en CSS):
+//   1) Se envuelve TODO el contenido del elemento (texto, y cualquier
+//      hijo que ya tuviera, como el punto de .format-label) en un único
+//      <span class="tw-reveal">.
+//   2) Se mide su ancho real con scrollWidth (funciona aunque el span
+//      tenga overflow:hidden y width:0 — scrollWidth siempre refleja el
+//      ancho que el contenido necesitaría sin recortar).
+//   3) Se anima la propiedad "width" de 0 a ese ancho con una transición
+//      CSS en pasos (steps), así el avance se ve "a saltos" de carácter.
+//
+// El texto en sí (color, degradado, background-clip) NUNCA se toca ni se
+// anima — sigue siendo la regla estática de h1.wordmark en styles.css.
+// Por eso esta técnica no puede volver a producir el glitch de recorte:
+// no hay nada de eso involucrado en la animación.
 // ---------------------------------------------------------------
-function typewriterize(el, charDelayMs, startDelayMs){
+function typewriterize(el, msPerChar, startDelayMs){
   if(!el) return startDelayMs;
-  let i = 0;
 
-  function wrapNode(node){
-    if(node.nodeType === Node.TEXT_NODE){
-      const frag = document.createDocumentFragment();
-      for(const ch of node.textContent){
-        const span = document.createElement('span');
-        span.className = 'tw-c';
-        span.textContent = ch;
-        span.style.animationDelay = `${startDelayMs + i * charDelayMs}ms`;
-        frag.appendChild(span);
-        if(ch !== ' ') i++;
-      }
-      node.replaceWith(frag);
-    }else if(node.nodeType === Node.ELEMENT_NODE){
-      [...node.childNodes].forEach(wrapNode);
-    }
-  }
+  // Si el usuario prefiere menos movimiento, no se toca el DOM en
+  // absoluto: el texto ya está ahí, normal y visible.
+  if(prefersReducedMotion) return startDelayMs;
 
-  [...el.childNodes].forEach(wrapNode);
-  return startDelayMs + i * charDelayMs;
+  const reveal = document.createElement('span');
+  reveal.className = 'tw-reveal';
+  while(el.firstChild) reveal.appendChild(el.firstChild);
+  el.appendChild(reveal);
+
+  // Cuenta caracteres visibles (sin espacios) para calibrar la duración,
+  // igual que antes: más texto = tipeo un poco más largo, pero con un
+  // mínimo para que nunca se sienta instantáneo ni eterno.
+  const charCount = Math.max(reveal.textContent.replace(/\s/g, '').length, 1);
+  const duration = Math.min(Math.max(charCount * msPerChar, 220), 2200);
+  const naturalWidth = reveal.scrollWidth;
+
+  reveal.style.width = '0px';
+  reveal.style.transitionProperty = 'width';
+  reveal.style.transitionDuration = `${duration}ms`;
+  reveal.style.transitionDelay = `${startDelayMs}ms`;
+  reveal.style.transitionTimingFunction = `steps(${charCount}, end)`;
+
+  // Forzar al navegador a "confirmar" el width:0px antes de pedirle que
+  // anime al ancho final; si no, a veces colapsa ambos cambios en un
+  // solo frame y no se ve transición.
+  reveal.getBoundingClientRect();
+  requestAnimationFrame(() => {
+    reveal.style.width = naturalWidth + 'px';
+  });
+
+  // Al terminar, se limpian los estilos inline: el span vuelve a
+  // comportarse como contenido normal (por si la ventana cambia de
+  // tamaño después, o el texto es responsive).
+  reveal.addEventListener('transitionend', function onEnd(e){
+    if(e.propertyName !== 'width') return;
+    reveal.removeEventListener('transitionend', onEnd);
+    reveal.style.width = '';
+    reveal.style.overflow = 'visible';
+  });
+
+  return startDelayMs + duration;
 }
 
 const eyebrowEl = document.querySelector('#heroCopy .eyebrow');
@@ -115,6 +189,17 @@ if(eyebrowEl && wordmarkEl){
 // reproducen cuando este observer los detecta en pantalla.
 // ---------------------------------------------------------------
 const bgVideos = document.querySelectorAll('.hero-float video, .clip-pill video, #trabajos .card video.preview');
+// OJO (arreglo de las trabas): antes se usaba threshold:0.15 sin rootMargin,
+// así que cada clip de la marquesina (que se mueve todo el tiempo por la
+// animación CSS) cruzaba el 15% de visibilidad muchas veces por minuto,
+// disparando play()/pause() en cadena sobre 20+ videos a la vez. Cada
+// play() en un <video preload="none"> obliga al navegador a pedir datos y
+// re-iniciar el decodificador, así que ese "thrashing" era la causa real
+// de que los clips se vieran trabados/entrecortados, no el loop en sí.
+// rootMargin amplía el área de detección: el clip empieza a cargar/reproducir
+// ANTES de entrar visualmente (mientras aún está detrás de la máscara de
+// desvanecido) y solo se pausa bastante después de salir, así el video ya
+// está fluyendo cuando se vuelve visible y no se pausa/reanuda a cada rato.
 const playObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     const vid = entry.target;
@@ -124,7 +209,7 @@ const playObserver = new IntersectionObserver((entries) => {
       vid.pause();
     }
   });
-}, { threshold: 0.15 });
+}, { threshold: 0, rootMargin: '400px 200px' });
 bgVideos.forEach(v => playObserver.observe(v));
 
 // ---------------------------------------------------------------
