@@ -73,7 +73,7 @@ navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => na
 // Scroll reveal — además, la PRIMERA vez que un bloque entra en pantalla,
 // dispara el efecto "máquina de escribir" en cualquier texto marcado con
 // [data-tw] dentro de él (títulos de sección, labels, etc.), igual que en
-// el hero. typewriterize() está declarada más abajo pero funciona aquí por
+// el hero. typewriterChars() está declarada más abajo pero funciona aquí por
 // hoisting de funciones.
 const revealEls = document.querySelectorAll('.reveal');
 const io = new IntersectionObserver((entries) => {
@@ -83,7 +83,7 @@ const io = new IntersectionObserver((entries) => {
       e.target.querySelectorAll('[data-tw]').forEach(el => {
         if(!el.dataset.twDone){
           el.dataset.twDone = '1';
-          typewriterize(el, 16, 60);
+          typewriterChars(el, 16, 60);
         }
       });
       io.unobserve(e.target);
@@ -93,36 +93,52 @@ const io = new IntersectionObserver((entries) => {
 revealEls.forEach(el => io.observe(el));
 
 // ---------------------------------------------------------------
-// EFECTO "MÁQUINA DE ESCRIBIR" — REESCRITO DESDE CERO.
+// EFECTO "MÁQUINA DE ESCRIBIR" — dos técnicas, cada una donde es segura.
 //
-// El enfoque anterior envolvía cada letra en su propio <span> y le
-// animaba opacity/transform mientras el texto tenía además
-// -webkit-background-clip:text (para el degradado). Esa combinación es
-// justo la que rompe en WebKit de formas distintas según cómo se ajuste
-// (letra fantasma, texto invisible, etc.) — así que en vez de seguir
-// parchándola, se cambia de técnica por completo.
+// typewriterChars(): letra por letra con fade+translateY (.tw-c). Se usa
+// en TODO el texto que NO tiene degradado (.eyebrow, y los demás títulos
+// [data-tw] de la página). Es la animación "de siempre", suave y con
+// cascada natural entre letras — nunca causó el bug, porque el bug solo
+// aparecía al combinar esta animación con -webkit-background-clip:text.
 //
-// Nueva técnica ("reveal" por ancho, la más clásica y compatible que
-// existe para un efecto de tipeo en CSS):
-//   1) Se envuelve TODO el contenido del elemento (texto, y cualquier
-//      hijo que ya tuviera, como el punto de .format-label) en un único
-//      <span class="tw-reveal">.
-//   2) Se mide su ancho real con scrollWidth (funciona aunque el span
-//      tenga overflow:hidden y width:0 — scrollWidth siempre refleja el
-//      ancho que el contenido necesitaría sin recortar).
-//   3) Se anima la propiedad "width" de 0 a ese ancho con una transición
-//      CSS en pasos (steps), así el avance se ve "a saltos" de carácter.
-//
-// El texto en sí (color, degradado, background-clip) NUNCA se toca ni se
-// anima — sigue siendo la regla estática de h1.wordmark en styles.css.
-// Por eso esta técnica no puede volver a producir el glitch de recorte:
-// no hay nada de eso involucrado en la animación.
+// typewriterReveal(): SOLO para el wordmark ("SIAN T"), que sí tiene el
+// degradado. En vez de tocar cada letra, envuelve todo el texto en un
+// único <span class="tw-reveal"> y anima su "width" de 0 al ancho real
+// (medido con scrollWidth) — el texto en sí (color, degradado,
+// background-clip) nunca se anima, así que no puede volver a glitchear.
+// Para que se sienta igual de suave que la versión letra por letra, usa
+// una curva continua (no steps) y un fundido de borde definido en CSS
+// (.tw-reveal, ver styles.css) para que el texto se vea "materializar"
+// en vez de cortarse en seco.
 // ---------------------------------------------------------------
-function typewriterize(el, msPerChar, startDelayMs){
+function typewriterChars(el, charDelayMs, startDelayMs){
   if(!el) return startDelayMs;
+  if(prefersReducedMotion) return startDelayMs;
+  let i = 0;
 
-  // Si el usuario prefiere menos movimiento, no se toca el DOM en
-  // absoluto: el texto ya está ahí, normal y visible.
+  function wrapNode(node){
+    if(node.nodeType === Node.TEXT_NODE){
+      const frag = document.createDocumentFragment();
+      for(const ch of node.textContent){
+        const span = document.createElement('span');
+        span.className = ch === ' ' ? 'tw-c tw-space' : 'tw-c';
+        span.textContent = ch;
+        span.style.animationDelay = `${startDelayMs + i * charDelayMs}ms`;
+        frag.appendChild(span);
+        if(ch !== ' ') i++;
+      }
+      node.replaceWith(frag);
+    }else if(node.nodeType === Node.ELEMENT_NODE){
+      [...node.childNodes].forEach(wrapNode);
+    }
+  }
+
+  [...el.childNodes].forEach(wrapNode);
+  return startDelayMs + i * charDelayMs;
+}
+
+function typewriterReveal(el, msPerChar, startDelayMs){
+  if(!el) return startDelayMs;
   if(prefersReducedMotion) return startDelayMs;
 
   const reveal = document.createElement('span');
@@ -130,9 +146,6 @@ function typewriterize(el, msPerChar, startDelayMs){
   while(el.firstChild) reveal.appendChild(el.firstChild);
   el.appendChild(reveal);
 
-  // Cuenta caracteres visibles (sin espacios) para calibrar la duración,
-  // igual que antes: más texto = tipeo un poco más largo, pero con un
-  // mínimo para que nunca se sienta instantáneo ni eterno.
   const charCount = Math.max(reveal.textContent.replace(/\s/g, '').length, 1);
   const duration = Math.min(Math.max(charCount * msPerChar, 220), 2200);
   const naturalWidth = reveal.scrollWidth;
@@ -141,19 +154,16 @@ function typewriterize(el, msPerChar, startDelayMs){
   reveal.style.transitionProperty = 'width';
   reveal.style.transitionDuration = `${duration}ms`;
   reveal.style.transitionDelay = `${startDelayMs}ms`;
-  reveal.style.transitionTimingFunction = `steps(${charCount}, end)`;
+  // Curva continua (no steps): junto con el fundido de borde definido en
+  // CSS, esto es lo que hace que el avance se sienta suave y no "a
+  // saltos" duros de carácter.
+  reveal.style.transitionTimingFunction = 'cubic-bezier(.45,.05,.35,1)';
 
-  // Forzar al navegador a "confirmar" el width:0px antes de pedirle que
-  // anime al ancho final; si no, a veces colapsa ambos cambios en un
-  // solo frame y no se ve transición.
-  reveal.getBoundingClientRect();
+  reveal.getBoundingClientRect(); // confirmar width:0px antes de animar
   requestAnimationFrame(() => {
     reveal.style.width = naturalWidth + 'px';
   });
 
-  // Al terminar, se limpian los estilos inline: el span vuelve a
-  // comportarse como contenido normal (por si la ventana cambia de
-  // tamaño después, o el texto es responsive).
   reveal.addEventListener('transitionend', function onEnd(e){
     if(e.propertyName !== 'width') return;
     reveal.removeEventListener('transitionend', onEnd);
@@ -171,8 +181,8 @@ const heroCtasEl = document.querySelector('#heroCopy .hero-ctas');
 const scrollCueEl = document.querySelector('#heroCopy .scroll-cue');
 
 if(eyebrowEl && wordmarkEl){
-  const afterEyebrow = typewriterize(eyebrowEl, 14, 150);
-  const afterWordmark = typewriterize(wordmarkEl, 55, afterEyebrow + 150);
+  const afterEyebrow = typewriterChars(eyebrowEl, 14, 150);
+  const afterWordmark = typewriterReveal(wordmarkEl, 55, afterEyebrow + 150);
   const revealDelay = afterWordmark + 250;
 
   if(heroSubEl)  heroSubEl.style.animationDelay  = `${revealDelay}ms`;

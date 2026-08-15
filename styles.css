@@ -174,33 +174,58 @@
     50%{ transform:translate(-50%,-58%) scale(1.08); }
   }
   /* ---------------- ENTRADA SUAVE DEL TEXTO DEL HERO (al cargar la página) ----------------
-     REESCRITO DESDE CERO. El enfoque anterior (envolver cada letra en un
-     <span> y animarle opacity/transform mientras además tenía
-     -webkit-background-clip:text) causaba glitches de repintado en
-     WebKit sin importar cuántas veces se ajustara (letra fantasma, o
-     directamente texto invisible). La causa de fondo era esa: animar
-     CUALQUIER cosa sobre el propio elemento que recorta el degradado es
-     fràgil entre navegadores.
+     Dos técnicas distintas, cada una donde es segura:
 
-     Nuevo enfoque ("reveal" clásico por ancho, sin tocar el texto):
-     - El degradado y el -webkit-background-clip:text del wordmark quedan
-       100% ESTÁTICOS (ver regla de h1.wordmark más abajo) — nunca se
-       animan, nunca cambian. Cero riesgo de glitch de recorte.
-     - JS (script.js) envuelve el contenido del elemento en UN solo
-       <span class="tw-reveal">, mide su ancho real (scrollWidth) y anima
-       la propiedad "width" desde 0 hasta ese ancho con overflow:hidden,
-       usando steps(N) para que el avance se vea "a saltos" de carácter,
-       simulando tipeo. Es la técnica de "typewriter" en CSS más antigua
-       y compatible que existe: no depende de recortar texto con
-       degradados, así que no puede volver a romperse por esto.
-     - Si el usuario prefiere menos movimiento, ni siquiera se crea el
-       span: el texto se queda tal cual, visible, sin animar (ver JS). */
+     1) TEXTO SIN DEGRADADO (.eyebrow y el resto de títulos [data-tw]:
+        "Técnicas & Recursos", los format-label, "Disponible para
+        proyectos"...): usan el clásico efecto letra-por-letra con
+        fade+translateY (.tw-c). Es 100% seguro porque ninguno de estos
+        elementos tiene -webkit-background-clip:text — el bug de la letra
+        fantasma NUNCA ocurría aquí, solo en el wordmark con degradado.
+
+     2) SOLO EL WORDMARK ("SIAN T", que sí tiene el degradado): usa el
+        "reveal" por ancho (.tw-reveal) en vez de spans por letra, porque
+        animar opacity/transform sobre un elemento con
+        -webkit-background-clip:text es justo lo que causaba el glitch en
+        WebKit. El degradado queda 100% estático (ver h1.wordmark abajo).
+        Para que igual se sienta suave (y no "a saltos"), la propiedad
+        "width" se anima con una curva continua (no steps), y además el
+        propio borde de avance lleva un fundido suave (mask-image) de
+        unos px, así el texto parece "materializarse" en vez de cortarse
+        de golpe letra por letra. */
+  @keyframes twChar{
+    0%{ opacity:0; transform:translateY(8px); }
+    100%{ opacity:1; transform:translateY(0); }
+  }
+  .tw-c{
+    display:inline-block;
+    opacity:0;
+    animation:twChar .4s cubic-bezier(.16,1,.3,1) forwards;
+    will-change:opacity, transform;
+  }
+  /* Al envolver cada carácter (incluidos los espacios) en su propio
+     <span class="tw-c"> con display:inline-block, el espacio queda aislado
+     en su propio mini contexto de formato -> el navegador lo trata como
+     espacio "al borde de línea" y lo colapsa a ancho 0 (por eso títulos
+     como "Técnicas & Recursos" se verían pegados: "Técnicas&Recursos").
+     Se le da un ancho explícito a cualquier espacio de máquina de escribir. */
+  .tw-space{ width:.3em; }
+
   .tw-reveal{
     display:inline-block;
     overflow:hidden;
     white-space:nowrap;
     vertical-align:top;
     max-width:100%;
+    /* Fundido suave en el borde derecho (los últimos ~22px del ancho
+       revelado se desvanecen a transparente) para que el texto no se
+       corte en seco a medida que "width" crece — se ve como si cada
+       letra se fuera materializando suavemente, no como una cortina que
+       se abre de golpe. Al ser relativo a "100%" (el ancho ACTUAL del
+       propio span en cada frame de la transición), este fundido viaja
+       solo con el borde de avance automáticamente. */
+    -webkit-mask-image:linear-gradient(90deg, #000 calc(100% - 22px), transparent 100%);
+    mask-image:linear-gradient(90deg, #000 calc(100% - 22px), transparent 100%);
   }
 
   h1.wordmark{
@@ -249,6 +274,7 @@
   }
 
   @media (prefers-reduced-motion: reduce){
+    .tw-c{ animation:none; opacity:1; }
     .hero-sub, .hero-ctas, .scroll-cue{
       animation:none; opacity:1;
     }
