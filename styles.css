@@ -517,6 +517,9 @@
 
   .grid-h{
     display:grid;
+    /* Vuelven a ser 3 videos: 3 columnas a ancho completo, igual que
+       .grid-v (formato vertical), para mantener el mismo tamaño de
+       tarjeta entre ambos bloques. */
     grid-template-columns:repeat(3, 1fr);
     gap:22px;
   }
