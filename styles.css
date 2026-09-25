@@ -288,7 +288,12 @@
     text-transform:uppercase;
     color:var(--violet-soft);
     margin-bottom:22px;
-    display:flex; align-items:center; gap:10px;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    flex-wrap:wrap; /* FIX MOBILE: sin esto, cada letra (envuelta en su propio
+      span por el efecto "máquina de escribir") es un ítem flex y no puede
+      pasar a una segunda línea -> el texto se salía del viewport y se veía
+      cortado en los bordes en pantallas angostas. */
+    row-gap:6px;
     z-index:2;
     position:relative; /* necesario para que z-index tenga efecto (ver fix más abajo) */
   }
