@@ -1,917 +1,569 @@
+/* =====================================================================
+   SIAN T — Portafolio · estética CRT (pantalla morada, scanlines, halftone)
+   Colores y fuentes: edita solo :root.
+   ===================================================================== */
 :root{
-    /* ---------- PALETA (edita aquí) ---------- */
-    --bg:            #08070A;
-    --surface:       #121016;
-    --surface-2:     #1B1722;
-    --hairline:      rgba(255,255,255,0.08);
-    --text:          #F5F3F8;
-    --text-muted:    #9C96A8;
-    --violet:        #9B5DE5;
-    --violet-deep:   #5B21B6;
-    --violet-soft:   #C9A6F5;
+  --bg:          #0B0812;
+  --bg-2:        #140F1F;
+  --bezel-hi:    #2E2340;
+  --bezel-lo:    #0B0812;
+  --hairline:    rgba(255,255,255,.09);
+  --text:        #FBF4F7;
+  --text-muted:  #B8A9C9;   /* 9:1 sobre --bg */
+  --violet:     #7C3AED;   /* blanco encima: 5.7:1 */
+  --violet-hot: #B794F6;   /* acento sobre fondo oscuro (8:1); texto oscuro encima: 7.9:1 */
+  --violet-deep:#5B21B6;   /* sobre blanco: 9:1 */
+  --violet-soft:   #C9A6F5;
+  --ink:         #120A1F;
 
-    --font-display: -apple-system, "SF Pro Display", "Inter Tight", "Inter", "Helvetica Neue", sans-serif;
-    --font-body:    -apple-system, "SF Pro Text", "Inter", "Helvetica Neue", sans-serif;
-    --font-mono:    "SF Mono", "IBM Plex Mono", ui-monospace, monospace;
+  --font-display: "Saltblack Combat", "Old English Text MT", Georgia, serif;
+  --font-body:    "Denitah Stellar", Georgia, "Times New Roman", serif;
+  --font-mono:    "SF Mono", "IBM Plex Mono", ui-monospace, Menlo, monospace;
 
-    --ease: cubic-bezier(.16,1,.3,1);
-  }
+  --ease: cubic-bezier(.16,1,.3,1);
+  --radius: 18px;
+  --scanlines: repeating-linear-gradient(0deg, rgba(0,0,0,.2) 0 1px, transparent 1px 3px);
+  --halftone: radial-gradient(rgba(0,0,0,.28) 1px, transparent 1.5px) 0 0 / 5px 5px;
+  --stripes: repeating-linear-gradient(115deg, rgba(255,255,255,.08) 0 6px, transparent 6px 16px);
+}
 
-  *{ box-sizing:border-box; margin:0; padding:0; }
-  html{ scroll-behavior:smooth; background:var(--bg); }
-  body{
-    background:var(--bg);
-    color:var(--text);
-    font-family:var(--font-body);
-    -webkit-font-smoothing:antialiased;
-    overflow-x:hidden;
-    position:relative;
-  }
+@font-face{ font-family:"Saltblack Combat"; src:url("fonts/saltblack-combat.woff2") format("woff2"); font-display:swap; }
+@font-face{ font-family:"Denitah Stellar"; src:url("fonts/denitah-stellar.woff2") format("woff2"); font-display:swap; }
 
-  /* subtle grain for depth, Apple-ish quality feel */
-  body::before{
-    content:"";
-    position:fixed; inset:0;
-    pointer-events:none;
-    z-index:999;
-    opacity:.035;
-    mix-blend-mode:overlay;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
+*{ box-sizing:border-box; margin:0; padding:0; }
+html{ scroll-behavior:smooth; background:var(--bg); }
+body{
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(124,58,237,.18), transparent 70%),
+    var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  font-size:18px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+/* grano sutil */
+body::before{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:999; opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
 
-  /* ---------------- ANIMATED GRID BACKGROUND ----------------
-     Antes esto animaba `background-position`, lo que obliga al navegador
-     a repintar TODA la pantalla en cada frame (costoso). Ahora el patrón
-     vive en un pseudo-elemento más grande que se mueve con `transform`
-     (translate3d), que va por GPU/compositor y es mucho más liviano.
-     El "mask" que difumina los bordes se queda fijo en el contenedor
-     exterior, que no se anima. */
-  .grid-bg{
-    position:fixed; inset:0;
-    z-index:0;
-    pointer-events:none;
-    overflow:hidden;
-    -webkit-mask-image:radial-gradient(ellipse 90% 70% at 50% 30%, #000 40%, transparent 90%);
-    mask-image:radial-gradient(ellipse 90% 70% at 50% 30%, #000 40%, transparent 90%);
-  }
-  .grid-bg::before{
-    content:"";
-    position:absolute;
-    top:-56px; left:-56px; right:-56px; bottom:-56px;
-    background-image:
-      linear-gradient(rgba(155,93,229,.09) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(155,93,229,.09) 1px, transparent 1px);
-    background-size:56px 56px;
-    animation:gridDrift 26s linear infinite;
-    will-change:transform;
-  }
-  @keyframes gridDrift{
-    0%{ transform:translate3d(0,0,0); }
-    100%{ transform:translate3d(-56px,-112px,0); }
-  }
+a{ color:inherit; text-decoration:none; }
+img{ max-width:100%; display:block; }
+button{ font:inherit; color:inherit; }
+section{ position:relative; }
+::selection{ background:var(--violet); color:#fff; }
+:focus-visible{ outline:2px solid var(--violet-hot); outline-offset:3px; border-radius:6px; }
 
-  a{ color:inherit; text-decoration:none; }
-  img{ max-width:100%; display:block; }
-  section{ position:relative; z-index:1; }
-  ::selection{ background:var(--violet); color:#fff; }
+.wrap{ max-width:1240px; margin:0 auto; padding:0 32px; }
 
-  .wrap{
-    max-width:1180px;
-    margin:0 auto;
-    padding:0 32px;
-  }
+.skip-link{
+  position:fixed; left:16px; top:-60px; z-index:1100;
+  background:#fff; color:var(--ink); font-weight:700; padding:10px 16px; border-radius:8px;
+}
+.skip-link:focus{ top:16px; }
 
-  /* ---------------- NAV (floating pill, hides on scroll down) ---------------- */
-  header{
-    position:fixed; top:18px; left:50%;
-    transform:translate(-50%, 0);
-    z-index:100;
-    width:min(1040px, calc(100% - 40px));
-    transition:transform .5s var(--ease), background .4s var(--ease), box-shadow .4s var(--ease), border-color .4s;
-  }
-  header.hide-nav{
-    transform:translate(-50%, -130%);
-  }
-  nav{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:10px 12px 10px 20px;
-    border-radius:100px;
-    background:rgba(18,16,22,.55);
-    border:1px solid var(--hairline);
-    backdrop-filter:blur(20px) saturate(160%);
-    -webkit-backdrop-filter:blur(20px) saturate(160%);
-    transition:background .4s var(--ease), border-color .4s, box-shadow .4s;
-  }
-  header.scrolled nav{
-    background:rgba(18,16,22,.78);
-    border-color:rgba(155,93,229,.28);
-    box-shadow:0 14px 40px -14px rgba(0,0,0,.6);
-  }
-  .logo{
-    font-family:var(--font-display);
-    font-weight:700;
-    font-size:15px;
-    letter-spacing:.14em;
-    display:flex; align-items:center; gap:10px;
-  }
-  .logo .avatar{
-    width:30px; height:30px;
-    border-radius:50%;
-    object-fit:cover;
-    border:1.5px solid rgba(255,255,255,.14);
-    flex-shrink:0;
-    background:linear-gradient(155deg, var(--violet), var(--violet-deep));
-  }
-  .logo .dot{
-    width:7px; height:7px; border-radius:50%;
-    background:var(--violet);
-    box-shadow:0 0 12px 2px var(--violet);
-    object-fit:cover; /* por si reemplazas el <span> por una <img> */
-  }
-  .nav-links{ display:flex; align-items:center; gap:36px; }
-  .nav-links a{
-    font-size:13.5px; color:var(--text-muted);
-    letter-spacing:.02em;
-    transition:color .25s var(--ease);
-    position:relative;
-  }
-  .nav-links a:hover{ color:var(--text); }
-  .nav-cta{
-    padding:9px 20px;
-    border-radius:100px;
-    background:var(--text);
-    color:#0a0a0c !important;
-    font-weight:600;
-    font-size:13px;
-    transition:transform .3s var(--ease), box-shadow .3s var(--ease);
-  }
-  .nav-cta:hover{ transform:translateY(-1px); box-shadow:0 8px 24px rgba(155,93,229,.35); }
-  .nav-toggle{ display:none; }
+/* =====================================================================
+   INTRO CRT — solo si <html> tiene .crt-play (lo decide el script del <head>).
+   Sin JS o con movimiento reducido no existe. Todo dura ~1,6 s y termina
+   solo por CSS aunque falle script.js.
+   ===================================================================== */
+.crt-intro{ display:none; }
+html:not(.crt-play) .crt-skip{ display:none; }
+html.crt-play .crt-intro{
+  display:block; position:fixed; inset:0; z-index:1000; overflow:hidden;
+  background:radial-gradient(ellipse at center, #150d24 0%, #040308 75%);
+  animation:crtOut .45s ease 1.5s forwards;
+}
+html.crt-play .crt-skip{
+  display:inline-flex; position:fixed; right:24px; bottom:24px; z-index:1001;
+  animation:crtOut .45s ease 1.5s forwards;
+}
+html.crt-done .crt-intro, html.crt-done .crt-skip{ display:none; }
 
-  /* ---------------- HERO ---------------- */
-  .hero{
-    min-height:100svh;
-    display:flex; flex-direction:column;
-    align-items:center; justify-content:center;
-    text-align:center;
-    position:relative;
-    padding-top:120px;
-    overflow:hidden;
-  }
-  .glow{
-    position:absolute;
-    width:900px; height:900px;
-    top:50%; left:50%;
-    transform:translate(-50%,-58%);
-    background:radial-gradient(circle at center, rgba(155,93,229,.32), rgba(91,33,182,.10) 45%, transparent 70%);
-    filter:blur(10px);
-    pointer-events:none;
-    z-index:0;
-    animation:breathe 9s ease-in-out infinite;
-  }
-  @keyframes breathe{
-    0%,100%{ transform:translate(-50%,-58%) scale(1); }
-    50%{ transform:translate(-50%,-58%) scale(1.08); }
-  }
-  /* ---------------- ENTRADA SUAVE DEL TEXTO DEL HERO (al cargar la página) ----------------
-     Dos técnicas distintas, cada una donde es segura:
+.crt-noise{ position:absolute; inset:0; opacity:0; animation:noiseFade 1.6s ease forwards; }
+.crt-noise::before{
+  content:""; position:absolute; inset:-60px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='1' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .8 0 0 0 0 .7 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:noiseJitter .5s steps(4) infinite;
+}
+.crt-beam{
+  position:absolute; left:0; right:0; top:50%; height:2px; margin-top:-1px;
+  background:rgba(226,212,255,.9);
+  box-shadow:0 0 18px 4px rgba(183,148,246,.6);
+  transform:scale(0,1); opacity:0;
+  animation:beam 1.5s cubic-bezier(.7,0,.2,1) .15s forwards;
+}
+.crt-osd{
+  position:absolute; top:28px; right:30px;
+  font-family:var(--font-mono); font-size:14px; letter-spacing:.14em; color:var(--violet-soft);
+  opacity:0; animation:osd 1.4s ease .2s forwards;
+}
+@keyframes noiseFade{ 0%{opacity:0} 15%{opacity:.22} 55%{opacity:.14} 85%,100%{opacity:0} }
+@keyframes noiseJitter{ 0%{transform:translate(0,0)} 25%{transform:translate(-30px,18px)} 50%{transform:translate(22px,-26px)} 75%{transform:translate(-14px,-10px)} 100%{transform:translate(0,0)} }
+@keyframes beam{
+  0%  { transform:scale(0,1);    opacity:0; }
+  15% { transform:scale(.04,1);  opacity:1; }
+  38% { transform:scale(1,1);    opacity:1; }
+  70% { transform:scale(1,240);  opacity:.55; }
+  100%{ transform:scale(1,520);  opacity:0; }
+}
+@keyframes osd{ 0%,20%{opacity:0} 35%,80%{opacity:1} 100%{opacity:0} }
+@keyframes crtOut{ to{ opacity:0; visibility:hidden; } }
 
-     1) TEXTO SIN DEGRADADO (.eyebrow y el resto de títulos [data-tw]:
-        "Técnicas & Recursos", los format-label, "Disponible para
-        proyectos"...): usan el clásico efecto letra-por-letra con
-        fade+translateY (.tw-c). Es 100% seguro porque ninguno de estos
-        elementos tiene -webkit-background-clip:text — el bug de la letra
-        fantasma NUNCA ocurría aquí, solo en el wordmark con degradado.
+/* =====================================================================
+   NAV
+   ===================================================================== */
+header{
+  position:fixed; top:16px; left:50%; z-index:100;
+  width:min(1040px, calc(100% - 32px));
+  transform:translate(-50%,0);
+  transition:transform .5s var(--ease);
+}
+header.hide-nav:not(:focus-within){ transform:translate(-50%,-140%); }
+header nav{
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  padding:8px 10px 8px 18px;
+  border-radius:100px;
+  background:rgba(20,15,31,.72);
+  border:1px solid var(--hairline);
+  backdrop-filter:blur(16px) saturate(150%);
+  -webkit-backdrop-filter:blur(16px) saturate(150%);
+  transition:border-color .4s, box-shadow .4s;
+}
+header.scrolled nav{ border-color:rgba(183,148,246,.3); box-shadow:0 14px 40px -14px rgba(0,0,0,.7); }
+.logo{
+  font-family:var(--font-display); font-size:24px; letter-spacing:.02em;
+  display:flex; align-items:center; gap:10px; min-height:44px;
+}
+.logo .avatar{ width:30px; height:30px; border-radius:50%; object-fit:cover; border:1.5px solid rgba(255,255,255,.18); }
+.nav-links{ display:flex; align-items:center; gap:30px; }
+.nav-links a{ font-size:16px; color:var(--text-muted); transition:color .25s; padding:10px 0; }
+.nav-links a:hover{ color:var(--text); }
+.nav-links .nav-cta{ padding:0 18px; color:var(--violet-soft); }
+.nav-links .nav-cta:hover{ color:#fff; }
+.nav-toggle{ display:none; }
 
-     2) SOLO EL WORDMARK ("SIAN T", que sí tiene el degradado): usa el
-        "reveal" por ancho (.tw-reveal) en vez de spans por letra, porque
-        animar opacity/transform sobre un elemento con
-        -webkit-background-clip:text es justo lo que causaba el glitch en
-        WebKit. El degradado queda 100% estático (ver h1.wordmark abajo).
-        Para que igual se sienta suave (y no "a saltos"), la propiedad
-        "width" se anima con una curva continua (no steps), y además el
-        propio borde de avance lleva un fundido suave (mask-image) de
-        unos px, así el texto parece "materializarse" en vez de cortarse
-        de golpe letra por letra. */
-  @keyframes twChar{
-    0%{ opacity:0; transform:translateY(8px); }
-    100%{ opacity:1; transform:translateY(0); }
-  }
-  .tw-c{
-    display:inline-block;
-    opacity:0;
-    animation:twChar .4s cubic-bezier(.16,1,.3,1) forwards;
-    will-change:opacity, transform;
-  }
-  /* Al envolver cada carácter (incluidos los espacios) en su propio
-     <span class="tw-c"> con display:inline-block, el espacio queda aislado
-     en su propio mini contexto de formato -> el navegador lo trata como
-     espacio "al borde de línea" y lo colapsa a ancho 0 (por eso títulos
-     como "Técnicas & Recursos" se verían pegados: "Técnicas&Recursos").
-     Se le da un ancho explícito a cualquier espacio de máquina de escribir. */
-  .tw-space{ width:.3em; }
+/* =====================================================================
+   HERO — el televisor
+   ===================================================================== */
+.hero{
+  min-height:100svh;
+  display:grid; place-items:center;
+  padding:92px 20px 28px;
+}
+.tv{
+  width:min(1240px, 100%);
+  height:clamp(520px, calc(100svh - 120px), 820px);
+  padding:clamp(10px, 1.8vw, 24px);
+  border-radius:clamp(22px, 3vw, 40px);
+  background:linear-gradient(160deg, var(--bezel-hi), #181127 55%, var(--bezel-lo));
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,.08),
+    inset 0 -12px 30px rgba(0,0,0,.6),
+    0 40px 80px -30px rgba(0,0,0,.85),
+    0 0 140px -40px rgba(124,58,237,.5);
+}
+.screen{
+  position:relative; isolation:isolate; overflow:hidden;
+  height:100%;
+  border-radius:4.5% / 7%;
+  background:radial-gradient(ellipse at 50% 38%, #A970F5 0%, var(--violet) 45%, #3E1585 100%);
+  box-shadow:inset 0 0 90px rgba(0,0,0,.55), inset 0 0 0 2px rgba(0,0,0,.45);
+}
+html.crt-play:not(.crt-done) .screen{ animation:screenOn .7s var(--ease) 1.1s both; }
+@keyframes screenOn{
+  0%  { transform:scale(1,.015); opacity:.4; }
+  60% { transform:scale(1,1.02); opacity:1; }
+  100%{ transform:scale(1,1); }
+}
 
-  .tw-reveal{
-    display:inline-block;
-    overflow:hidden;
-    white-space:nowrap;
-    vertical-align:top;
-    max-width:100%;
-    /* Fundido suave en el borde derecho (los últimos ~22px del ancho
-       revelado se desvanecen a transparente) para que el texto no se
-       corte en seco a medida que "width" crece — se ve como si cada
-       letra se fuera materializando suavemente, no como una cortina que
-       se abre de golpe. Al ser relativo a "100%" (el ancho ACTUAL del
-       propio span en cada frame de la transición), este fundido viaja
-       solo con el borde de avance automáticamente. */
-    -webkit-mask-image:linear-gradient(90deg, #000 calc(100% - 22px), transparent 100%);
-    mask-image:linear-gradient(90deg, #000 calc(100% - 22px), transparent 100%);
-  }
+/* Clip de fondo: gris + multiply = solo oscurece el morado (el texto blanco no pierde contraste) */
+.screen-video{
+  position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0;
+  filter:grayscale(1) contrast(1.15);
+  mix-blend-mode:multiply;
+  opacity:0; transition:opacity 1.2s ease;
+}
+.screen-video.is-on{ opacity:.55; }
 
-  h1.wordmark{
-    font-family:var(--font-display);
-    font-weight:700;
-    font-size:clamp(72px, 15vw, 168px);
-    line-height:.92;
-    letter-spacing:-.03em;
-    word-spacing:.28em; /* separa visualmente "SIAN" de "T" */
-    background:linear-gradient(180deg, #FFFFFF 0%, #EDE7F6 40%, var(--violet-soft) 100%);
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
-    z-index:2;
-    position:relative; /* necesario para que z-index tenga efecto (ver fix más abajo) */
-  }
+.screen-fx{ position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:
+    radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.5) 100%),
+    var(--scanlines);
+}
+.screen-fx::before{ /* rayas diagonales arriba */
+  content:""; position:absolute; inset:0; background:var(--stripes);
+  -webkit-mask-image:linear-gradient(180deg, #000 0%, transparent 45%);
+          mask-image:linear-gradient(180deg, #000 0%, transparent 45%);
+}
+.screen-fx::after{ /* halftone abajo */
+  content:""; position:absolute; inset:0; background:var(--halftone);
+  -webkit-mask-image:linear-gradient(0deg, #000 0%, transparent 55%);
+          mask-image:linear-gradient(0deg, #000 0%, transparent 55%);
+}
 
-  @keyframes heroReveal{
-    0%{ opacity:0; transform:translateY(24px); filter:blur(6px); }
-    100%{ opacity:1; transform:translateY(0); filter:blur(0); }
-  }
-  /* keyframes propio para scroll-cue: mantiene su centrado horizontal
-     (left:50% + translateX(-50%)) mientras entra desde abajo */
-  @keyframes scrollCueReveal{
-    0%{ opacity:0; transform:translate(-50%, 24px); filter:blur(6px); }
-    100%{ opacity:1; transform:translate(-50%, 0); filter:blur(0); }
-  }
-  .hero-sub, .hero-ctas{
-    opacity:0;
-    animation:heroReveal 1s cubic-bezier(.16,1,.3,1) both;
-  }
-  .hero-sub{ animation-delay:1.4s; }
-  .hero-ctas{ animation-delay:1.6s; }
+.screen-content{
+  position:relative; z-index:2; height:100%;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center;
+  padding:40px 24px 76px;
+}
+.wordmark{
+  font-family:var(--font-display); font-weight:400;
+  font-size:clamp(92px, 19vw, 280px);
+  line-height:.9; letter-spacing:.01em;
+  color:#fff;
+  text-shadow:0 0 28px rgba(255,255,255,.35), .05em .05em 0 rgba(46,12,110,.6);
+  white-space:nowrap;
+}
+.label-pill{
+  position:relative; z-index:1;
+  display:inline-block;
+  background:#fff; color:var(--violet-deep);
+  font-size:clamp(14px, 1.5vw, 18px); letter-spacing:.12em; text-transform:uppercase;
+  padding:7px 16px; border-radius:6px;
+  box-shadow:0 0 22px rgba(255,255,255,.45);
+}
+.lp-top{ margin-bottom:-.6em; transform:translateX(-38%) rotate(-2deg); }
+.lp-bottom{ margin-top:-.5em; transform:translateX(42%) rotate(-2deg); }
+.hero-sub{
+  margin-top:28px; max-width:560px;
+  font-size:clamp(18px, 2vw, 22px); line-height:1.45;
+  color:#fff; text-shadow:0 1px 14px rgba(30,8,70,.6);
+}
+.hero-sub b{ font-weight:700; }
+.hero-ctas{ margin-top:28px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+/* ---------- Botones ----------
+   Píldoras compactas: relleno sólido o tenue (sin bordes gruesos ni degradados),
+   cambio suave de color al pasar y un leve hundido al pulsar. */
+.btn{
+  --press: cubic-bezier(.22,1,.36,1);
+  display:inline-flex; align-items:center; gap:10px;
+  min-height:44px; padding:0 20px; border:0; border-radius:26px;
+  font-family:var(--font-body); font-size:17px; letter-spacing:.02em; line-height:1;
+  cursor:pointer; white-space:nowrap;
+  transition:background-color .2s var(--press), color .2s var(--press), scale .12s var(--press);
+}
+.btn:active{ scale:.97; }
+.btn-primary{ background:#fff; color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.2); padding-right:6px; }
+.btn-primary:hover{ background:#EFE7FD; }
+.btn-ico{
+  display:grid; place-items:center; width:32px; height:32px; border-radius:50%;
+  background:var(--ink); color:#fff;
+  transition:translate .2s var(--press);
+}
+.btn-ico svg{ width:14px; height:14px; }
+.btn-primary:hover .btn-ico{ translate:0 2px; }
+.btn-soft{ background:rgba(18,10,31,.34); color:#fff; }
+.btn-soft:hover{ background:rgba(18,10,31,.5); }
+html.crt-play .crt-skip.btn-soft{ background:rgba(255,255,255,.1); }
+html.crt-play .crt-skip.btn-soft:hover{ background:rgba(255,255,255,.18); }
+.btn-tint{ background:rgba(124,58,237,.24); color:var(--violet-soft); }
+.btn-tint:hover{ background:rgba(124,58,237,.38); color:#fff; }
+.btn-chip{ background:transparent; color:var(--text-muted); box-shadow:inset 0 0 0 1px var(--hairline); }
+.btn-chip:hover{ color:var(--text); background:rgba(255,255,255,.05); }
+.btn-chip[aria-pressed="true"]{ color:var(--text); background:rgba(124,58,237,.24); box-shadow:none; }
+kbd{
+  font-family:var(--font-mono); font-size:11px; padding:2px 6px; border-radius:6px;
+  background:rgba(255,255,255,.12); color:rgba(255,255,255,.8);
+}
 
-  /* ---------------- MOSTRAR / OCULTAR TEXTO DEL HERO AL SCROLLEAR ----------------
-     El opacity se fija directamente desde JS (script.js) en cada frame de
-     scroll, en proporción a cuánto ha bajado el usuario -> por eso NO lleva
-     transition: así el desvanecido es 1:1 con la posición del scroll (gradual
-     en ambas direcciones) y no una animación de tiempo fijo. */
-  .hero-copy{
-    /* SIN position:relative a propósito: así .scroll-cue (position:absolute)
-       sigue anclado a .hero (su ancestro posicionado real) y no a este
-       contenedor, que solo envuelve el texto para poder mostrarlo/ocultarlo. */
-    display:flex; flex-direction:column; align-items:center;
-    will-change:opacity;
-  }
+.screen-bar{
+  position:absolute; left:0; right:0; bottom:0; z-index:3;
+  display:flex; align-items:center; gap:6px 22px; flex-wrap:wrap;
+  padding:8px clamp(14px, 3vw, 34px) 12px;
+  background:linear-gradient(0deg, rgba(18,8,40,.75), rgba(18,8,40,0));
+  font-family:var(--font-mono); font-size:13px;
+}
+.bar-ver{ background:var(--violet-hot); color:var(--ink); font-weight:700; padding:4px 12px; border-radius:6px; margin-right:auto; }
+.screen-bar a{ display:inline-flex; align-items:center; min-height:44px; color:rgba(255,255,255,.92); }
+.screen :focus-visible{ outline-color:#fff; }
+.screen-bar a:hover{ color:#fff; text-decoration:underline; text-underline-offset:4px; }
 
-  @media (prefers-reduced-motion: reduce){
-    .tw-c{ animation:none; opacity:1; }
-    .hero-sub, .hero-ctas, .scroll-cue{
-      animation:none; opacity:1;
-    }
-    .hero-copy{ opacity:1 !important; }
-  }
+/* Entrada del texto del hero (espera a la intro si la hay) */
+.hero-anim{ animation:heroIn .8s var(--ease) both; animation-delay:calc(var(--base, 80ms) + var(--i, 0) * 110ms); }
+html.crt-play:not(.crt-done) .hero-anim{ --base:1500ms; }
+.screen-content > :nth-child(1){ --i:1; }
+.screen-content > :nth-child(2){ --i:0; }
+.screen-content > :nth-child(3){ --i:2; }
+.screen-content > :nth-child(4){ --i:3; }
+.screen-content > :nth-child(5){ --i:4; }
+@keyframes heroIn{ from{ opacity:0; translate:0 18px; } to{ opacity:1; translate:0 0; } }
 
-  .eyebrow{
-    font-family:var(--font-mono);
-    font-size:12.5px;
-    letter-spacing:.04em;
-    text-transform:uppercase;
-    color:var(--violet-soft);
-    margin-bottom:22px;
-    display:flex; align-items:center; justify-content:center; gap:10px;
-    flex-wrap:wrap; /* FIX MOBILE: sin esto, cada letra (envuelta en su propio
-      span por el efecto "máquina de escribir") es un ítem flex y no puede
-      pasar a una segunda línea -> el texto se salía del viewport y se veía
-      cortado en los bordes en pantallas angostas. */
-    row-gap:6px;
-    z-index:2;
-    position:relative; /* necesario para que z-index tenga efecto (ver fix más abajo) */
-  }
-  .eyebrow::before, .eyebrow::after{
-    content:""; width:26px; height:1px; background:linear-gradient(90deg, transparent, var(--violet-soft));
-  }
-  .eyebrow::after{ background:linear-gradient(90deg, var(--violet-soft), transparent); }
+/* =====================================================================
+   SECCIONES
+   ===================================================================== */
+.section-head{ display:flex; flex-direction:column; align-items:center; text-align:center; gap:12px; margin-bottom:48px; }
+.section-head h2, #contacto h2{
+  font-family:var(--font-display); font-weight:400;
+  letter-spacing:.01em; line-height:1;
+}
+.section-head h2{ font-size:clamp(46px, 6.5vw, 86px); }
+.section-head p{ color:var(--text-muted); max-width:480px; font-size:18px; }
 
-  .hero-sub{
-    margin-top:26px;
-    font-size:clamp(16px, 2vw, 19px);
-    color:var(--text-muted);
-    max-width:560px;
-    line-height:1.55;
-    z-index:2;
-    position:relative;
-  }
-  .hero-sub b{ color:var(--text); font-weight:600; }
-  .hero-ctas{
-    margin-top:44px;
-    display:flex; gap:14px; flex-wrap:wrap; justify-content:center;
-    z-index:2;
-    position:relative;
-  }
-  .btn{
-    padding:14px 30px;
-    border-radius:100px;
-    font-size:14.5px; font-weight:600;
-    transition:transform .35s var(--ease), box-shadow .35s var(--ease), background .3s;
-    display:inline-flex; align-items:center; gap:8px;
-  }
-  .btn-primary{
-    background:linear-gradient(180deg, var(--violet), var(--violet-deep));
-    color:#fff;
-    box-shadow:0 0 0 1px rgba(255,255,255,.08) inset, 0 14px 30px -10px rgba(155,93,229,.55);
-  }
-  .btn-primary:hover{ transform:translateY(-2px); box-shadow:0 0 0 1px rgba(255,255,255,.12) inset, 0 18px 38px -8px rgba(155,93,229,.7); }
-  .btn-ghost{
-    background:rgba(255,255,255,.04);
-    border:1px solid var(--hairline);
-    color:var(--text);
-  }
-  .btn-ghost:hover{ background:rgba(255,255,255,.08); transform:translateY(-2px); }
+.js .reveal{ opacity:0; transform:translateY(24px); transition:opacity .8s var(--ease), transform .8s var(--ease); }
+.js .reveal.in{ opacity:1; transform:none; }
 
-  /* ---------------- HERO FLOATING CLIPS ---------------- */
-  .hero-float{
-    position:absolute;
-    border-radius:16px;
-    overflow:hidden;
-    background:var(--surface);
-    border:1px solid rgba(255,255,255,.10);
-    box-shadow:0 30px 60px -20px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.03);
-    z-index:1; /* BUG FIX: este z-index solo funciona frente al texto del hero
-                  porque ahora .eyebrow/h1.wordmark/.hero-sub/.hero-ctas también
-                  tienen position:relative (antes eran estáticos, así que su
-                  z-index:2 no tenía ningún efecto y estas tarjetas flotantes,
-                  al ser position:absolute, terminaban pintándose SIEMPRE
-                  encima del texto — eso causaba el glitch visual sobre la "S"). */
-    opacity:0;
-    will-change:transform, opacity;
-    /* Cada tarjeta corre DOS animaciones en cadena sobre el mismo elemento:
-       1) entrada con zoom-in suave (floatCardNIn): opacity + scale + rotación
-          fija, una sola vez.
-       2) flote infinito (floatCardN): la MISMA rotación fija + translateY,
-          arranca justo cuando termina la entrada (su delay = duración +
-          delay de la entrada), así no hay salto entre una y otra. */
-  }
-  /* Resplandor suave detrás de cada tarjeta flotante, para que se lean
-     mejor sobre el fondo oscuro (se mueve junto con la tarjeta porque
-     es un pseudo-elemento hijo) */
-  .hero-float::before{
-    content:"";
-    position:absolute;
-    inset:-26px;
-    z-index:-1;
-    border-radius:32px;
-    background:radial-gradient(circle at center, rgba(155,93,229,.38), rgba(91,33,182,.12) 55%, transparent 75%);
-    filter:blur(26px);
-    opacity:.85;
-    pointer-events:none;
-  }
-  .hero-float video, .hero-float .f-thumb{
-    width:100%; height:100%; object-fit:cover; display:block;
-  }
-  .hero-float .f-thumb{
-    background:radial-gradient(circle at 30% 20%, rgba(155,93,229,.4), transparent 60%),
-               linear-gradient(155deg, var(--surface-2), var(--surface) 70%);
-    display:flex; align-items:center; justify-content:center;
-  }
-  .hero-float .f-thumb span{
-    font-family:var(--font-mono);
-    font-size:10px; letter-spacing:.1em; text-transform:uppercase;
-    color:var(--text-muted); text-align:center; padding:0 14px;
-  }
-  .hf-h{ width:420px; aspect-ratio:16/9; }
-  .hf-v{ width:255px; aspect-ratio:9/16; }
+/* Máquina de escribir (títulos con data-tw) */
+.tw-w{ display:inline-block; white-space:nowrap; }
+.tw-c{ display:inline-block; opacity:0; animation:twChar .35s var(--ease) forwards; }
+@keyframes twChar{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
 
-  .hf-1{ top:9%;  left:2%;   animation-name:floatCard1In, floatCard1; }
-  .hf-2{ top:6%;  right:2%;  animation-name:floatCard2In, floatCard2; }
-  .hf-3{ bottom:7%; left:3%; animation-name:floatCard3In, floatCard3; }
-  .hf-4{ bottom:5%; right:4%; animation-name:floatCard4In, floatCard4; }
+/* ---------- Marquesina ---------- */
+#marquesina{ padding:72px 0 16px; overflow:hidden; }
+.marquee-viewport{
+  overflow:hidden;
+  -webkit-mask-image:linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+          mask-image:linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  padding:10px 0 24px;
+}
+.marquee-track{ display:flex; width:max-content; animation:marqueeScroll 44s linear infinite; }
+.marquee-track:hover, .marquee-track:focus-within, .marquee-track.paused{ animation-play-state:paused; }
+@keyframes marqueeScroll{ to{ transform:translateX(-50%); } }
 
-  .hf-1, .hf-2, .hf-3, .hf-4{
-    animation-timing-function:cubic-bezier(.16,1,.3,1), ease-in-out;
-    animation-iteration-count:1, infinite;
-    animation-fill-mode:forwards, none;
-  }
-  /* entrada: .95s de duración → el flote de cada tarjeta arranca justo
-     cuando su entrada termina (delay de entrada + .95s) */
-  .hf-1{ animation-duration:.95s, 7.5s; animation-delay:.15s, 1.1s; }
-  .hf-2{ animation-duration:.95s, 8.5s; animation-delay:.3s,  1.25s; }
-  .hf-3{ animation-duration:.95s, 6.8s; animation-delay:.45s, 1.4s; }
-  .hf-4{ animation-duration:.95s, 7.8s; animation-delay:.6s,  1.55s; }
+.clip-pill{
+  position:relative; flex-shrink:0; width:196px; height:262px; margin-right:18px;
+  border-radius:var(--radius); overflow:hidden;
+  background:
+    var(--scanlines),
+    radial-gradient(ellipse at 50% 35%, rgba(124,58,237,.55), rgba(126,10,64,.35) 60%, var(--bg-2));
+  border:1px solid rgba(183,148,246,.22);
+  transition:transform .45s var(--ease), border-color .4s;
+}
+.clip-pill:hover{ transform:translateY(-4px) scale(1.04); border-color:var(--violet-hot); }
+.clip-pill video{ width:100%; height:100%; object-fit:cover; display:block; }
+.clip-pill::after{ content:""; position:absolute; inset:0; background:var(--scanlines); opacity:.35; pointer-events:none; }
+.clip-badge{
+  position:absolute; left:10px; right:10px; bottom:10px; z-index:1;
+  background:rgba(11,8,18,.78); border-radius:12px; padding:8px 12px;
+  display:flex; flex-direction:column; gap:2px;
+}
+.clip-badge .c-style{ font-size:15px; }
+.clip-badge .c-tool{ font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--violet-soft); }
 
-  /* Entrada: zoom-in suave + leve desenfoque que se disipa, terminando
-     exactamente en la misma rotación/posición donde el flote continúa */
-  @keyframes floatCard1In{
-    0%{ opacity:0; transform:rotate(-9deg) scale(.8) translateY(14px); filter:blur(5px); }
-    100%{ opacity:1; transform:rotate(-9deg) scale(1) translateY(0); filter:blur(0); }
-  }
-  @keyframes floatCard2In{
-    0%{ opacity:0; transform:rotate(7deg) scale(.8) translateY(14px); filter:blur(5px); }
-    100%{ opacity:1; transform:rotate(7deg) scale(1) translateY(0); filter:blur(0); }
-  }
-  @keyframes floatCard3In{
-    0%{ opacity:0; transform:rotate(6deg) scale(.8) translateY(14px); filter:blur(5px); }
-    100%{ opacity:1; transform:rotate(6deg) scale(1) translateY(0); filter:blur(0); }
-  }
-  @keyframes floatCard4In{
-    0%{ opacity:0; transform:rotate(-6deg) scale(.8) translateY(14px); filter:blur(5px); }
-    100%{ opacity:1; transform:rotate(-6deg) scale(1) translateY(0); filter:blur(0); }
-  }
+/* ---------- Trabajos ---------- */
+#trabajos{ padding:110px 0 90px; scroll-margin-top:70px; }
+.format-label{
+  display:flex; align-items:center; gap:12px;
+  font-weight:400; font-size:15px; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--text-muted); margin:0 0 20px;
+}
+.format-label .pill{ width:9px; height:9px; border-radius:50%; background:var(--violet-hot); box-shadow:0 0 10px var(--violet-hot); flex-shrink:0; }
+.format-block{ margin-bottom:72px; }
+.format-block:last-child{ margin-bottom:0; }
 
-  /* Rotación fija de cada tarjeta + flote vertical infinito */
-  @keyframes floatCard1{
-    0%,100%{ transform:rotate(-9deg) translateY(0); }
-    50%{ transform:rotate(-9deg) translateY(-20px); }
-  }
-  @keyframes floatCard2{
-    0%,100%{ transform:rotate(7deg) translateY(0); }
-    50%{ transform:rotate(7deg) translateY(-20px); }
-  }
-  @keyframes floatCard3{
-    0%,100%{ transform:rotate(6deg) translateY(0); }
-    50%{ transform:rotate(6deg) translateY(-20px); }
-  }
-  @keyframes floatCard4{
-    0%,100%{ transform:rotate(-6deg) translateY(0); }
-    50%{ transform:rotate(-6deg) translateY(-20px); }
-  }
+.grid-h{ display:grid; grid-template-columns:repeat(4, 1fr); gap:18px; }
+.grid-h .featured{ grid-column:span 2; grid-row:span 2; }
+.grid-v{ display:grid; grid-template-columns:repeat(4, 1fr); gap:18px; }
 
-  @media (max-width:1150px){
-    .hero-float{ display:none; }
-  }
+.format-note{
+  display:flex; flex-direction:column; justify-content:space-between;
+  padding:18px 20px; border-radius:var(--radius);
+  background:var(--scanlines), linear-gradient(160deg, var(--bezel-hi), var(--bg-2));
+  border:1px solid var(--hairline);
+}
+.fn-ch{ font-family:var(--font-mono); font-size:12px; letter-spacing:.14em; color:var(--violet-soft); }
+.fn-big{ font-family:var(--font-display); font-size:clamp(52px, 5.4vw, 80px); line-height:1; }
+.fn-small{ font-size:14px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; }
 
-  .scroll-cue{
-    position:absolute; bottom:38px; left:50%;
-    display:flex; flex-direction:column; align-items:center; gap:10px;
-    color:var(--text-muted); font-size:11px; letter-spacing:.18em; text-transform:uppercase;
-    z-index:2;
-    opacity:0;
-    transform:translate(-50%, 24px);
-    animation:scrollCueReveal 1s cubic-bezier(.16,1,.3,1) 1.85s both;
-  }
-  .scroll-cue .line{
-    width:1px; height:36px;
-    background:linear-gradient(180deg, var(--violet-soft), transparent);
-    animation:scrolldown 1.8s ease-in-out infinite;
-  }
-  @keyframes scrolldown{
-    0%{ transform:scaleY(0); transform-origin:top; }
-    50%{ transform:scaleY(1); transform-origin:top; }
-    50.01%{ transform-origin:bottom; }
-    100%{ transform:scaleY(0); transform-origin:bottom; }
-  }
+.card{
+  position:relative; overflow:hidden;
+  border-radius:var(--radius);
+  background:var(--bg-2);
+  border:1px solid rgba(255,255,255,.1);
+  transition:transform .45s var(--ease), border-color .35s, box-shadow .35s;
+}
+.card.h{ aspect-ratio:16/9; }
+.card.v{ aspect-ratio:9/16; }
+.card:hover, .card:focus-within{ transform:translateY(-4px); border-color:var(--violet-hot); box-shadow:0 24px 50px -24px rgba(124,58,237,.6); }
+.card.featured{ border-color:rgba(183,148,246,.55); box-shadow:0 0 0 1px rgba(183,148,246,.25), 0 30px 70px -30px rgba(124,58,237,.7); }
+.card::after{ content:""; position:absolute; inset:0; z-index:2; background:var(--scanlines); opacity:.25; pointer-events:none; }
 
-  /* ---------------- SECTION HEADS ---------------- */
-  .section-head{
-    display:flex; flex-direction:column; align-items:center;
-    text-align:center;
-    gap:14px;
-    margin-bottom:52px;
-  }
-  .section-head h2{
-    font-family:var(--font-display);
-    font-weight:700;
-    font-size:clamp(32px, 4.2vw, 48px);
-    letter-spacing:-.02em;
-  }
-  .section-head p{
-    color:var(--text-muted);
-    max-width:460px;
-    margin:0 auto;
-    font-size:15px;
-    line-height:1.6;
-  }
-  .reveal{
-    opacity:0; transform:translateY(28px);
-    transition:opacity .8s var(--ease), transform .8s var(--ease);
-  }
-  .reveal.in{ opacity:1; transform:translateY(0); }
+.card .thumb{ width:100%; height:100%; object-fit:cover; }
+.card .preview{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity .5s ease; pointer-events:none; }
+.card.is-playing .preview{ opacity:1; }
 
-  /* ---------------- TRABAJOS ---------------- */
-  #trabajos{ padding:150px 0 100px; content-visibility:auto; contain-intrinsic-size:1200px; }
+.card-tag{
+  position:absolute; top:12px; left:12px; z-index:3;
+  background:var(--violet-hot); color:var(--ink);
+  font-size:13px; letter-spacing:.1em; text-transform:uppercase;
+  padding:3px 10px; border-radius:6px;
+}
+.card-info{
+  position:absolute; left:10px; right:10px; bottom:10px; z-index:5;
+  display:flex; flex-direction:column; gap:2px;
+  padding:9px 12px; border-radius:12px;
+  background:rgba(11,8,18,.8);
+  pointer-events:none;
+}
+.card-kind{ font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--violet-soft); }
+.card-title{ font-size:clamp(17px, 1.8vw, 23px); line-height:1.25; }
+.card-link{
+  pointer-events:auto; position:relative; z-index:6;
+  align-self:flex-start; display:inline-flex; align-items:center; min-height:44px;
+  font-size:16px; color:#fff; text-decoration:underline; text-underline-offset:4px;
+  white-space:nowrap;
+}
+.play-btn{
+  position:absolute; top:50%; left:50%; z-index:3; translate:-50% -60%;
+  width:58px; height:58px; border-radius:50%;
+  background:rgba(255,255,255,.94); box-shadow:0 10px 30px rgba(0,0,0,.45);
+  transition:transform .35s var(--ease), background .3s;
+  pointer-events:none;
+}
+.play-btn::after{ content:""; position:absolute; inset:0; background:var(--violet-deep); clip-path:polygon(40% 30%, 40% 70%, 72% 50%); }
+.featured .play-btn{ width:84px; height:84px; }
+.card:hover .play-btn, .card:focus-within .play-btn{ transform:scale(1.08); }
+.card-hit{
+  position:absolute; inset:0; z-index:4;
+  background:transparent; border:0; cursor:pointer; border-radius:inherit;
+}
+.card-hit:focus-visible{ outline:3px solid var(--violet-hot); outline-offset:-3px; }
 
-  .format-label{
-    display:flex; align-items:center; gap:12px;
-    font-family:var(--font-mono);
-    font-size:12px; letter-spacing:.04em; text-transform:uppercase;
-    color:var(--text-muted);
-    margin:0 0 22px;
-  }
-  .format-label .pill{
-    /* display + margin explícitos (en vez de depender de ser flex-item de
-       .format-label): el texto que sigue ahora queda envuelto en un
-       span.tw-reveal (ver script.js) que no es flex, así que el punto
-       necesita valerse por sí solo para conservar su tamaño y separación. */
-    display:inline-block;
-    width:8px; height:8px; border-radius:50%; background:var(--violet);
-    margin-right:12px;
-    vertical-align:middle;
-    flex-shrink:0;
-  }
-  .format-block{ margin-bottom:80px; }
-  .format-block:last-child{ margin-bottom:0; }
+/* Portada del Reel (sin cargar nada de Instagram) */
+.reel-poster{
+  position:absolute; inset:0;
+  display:flex; flex-direction:column; align-items:center; padding-top:20%;
+  background:
+    var(--halftone),
+    var(--stripes),
+    radial-gradient(ellipse at 50% 40%, #A970F5, var(--violet) 50%, #35106F);
+}
+.reel-big{ font-family:var(--font-display); font-size:clamp(60px, 7.5vw, 104px); line-height:1; text-shadow:.05em .05em 0 rgba(46,12,110,.6); }
 
-  .grid-h{
-    display:grid;
-    /* Vuelven a ser 3 videos: 3 columnas a ancho completo, igual que
-       .grid-v (formato vertical), para mantener el mismo tamaño de
-       tarjeta entre ambos bloques. */
-    grid-template-columns:repeat(3, 1fr);
-    gap:22px;
-  }
-  .grid-v{
-    display:grid;
-    grid-template-columns:repeat(3, 1fr);
-    gap:22px;
-    /* antes tenía max-width:760px (~239px por tarjeta); se quita el límite
-       para que ocupe todo el ancho de la fila, igual que .grid-h, dando
-       tarjetas ~50% más grandes (~358px) de lado a lado */
-  }
+/* ---------- Sobre mí ---------- */
+#sobre{ padding:90px 0; border-top:1px solid var(--hairline); scroll-margin-top:70px; }
+.about-grid{ display:grid; grid-template-columns:1.1fr .9fr; gap:60px; align-items:center; }
+.about-text p{ font-size:19px; line-height:1.7; color:var(--text-muted); margin-bottom:18px; }
+.about-text .about-lead{ font-size:clamp(22px, 2.6vw, 30px); line-height:1.3; color:var(--text); }
+.about-text b{ color:var(--text); font-weight:700; }
+.about-lead b{ color:var(--violet-soft); }
+.tags{ display:flex; flex-wrap:wrap; gap:10px; margin-top:24px; list-style:none; }
+.tag{ font-size:15px; padding:8px 14px; border:1px solid rgba(183,148,246,.3); border-radius:100px; color:var(--text); }
+.stat-col{ display:flex; flex-direction:column; }
+.stat{ padding:24px 0; border-bottom:1px solid var(--hairline); }
+.stat:first-child{ padding-top:0; }
+.stat .num{ font-family:var(--font-display); font-size:60px; line-height:1; color:var(--violet-hot); }
+.stat .label{ color:var(--text-muted); font-size:16px; margin-top:6px; }
 
-  .card{
-    position:relative;
-    border-radius:26px;
-    overflow:hidden;
-    background:rgba(255,255,255,.035);
-    border:1px solid rgba(255,255,255,.10);
-    backdrop-filter:blur(10px) saturate(140%);
-    -webkit-backdrop-filter:blur(10px) saturate(140%);
-    box-shadow:0 20px 50px -24px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06);
-    cursor:pointer;
-    transition:transform .5s var(--ease), border-color .4s, box-shadow .4s;
-  }
-  .card:hover{
-    transform:translateY(-6px);
-    border-color:rgba(155,93,229,.55);
-    box-shadow:0 26px 60px -20px rgba(91,33,182,.4), inset 0 1px 0 rgba(255,255,255,.08);
-  }
-  .card.h{ aspect-ratio:16/9; }
-  .card.v{ aspect-ratio:9/16; }
+/* ---------- Contacto ---------- */
+#contacto{ padding:120px 0 100px; text-align:center; border-top:1px solid var(--hairline); scroll-margin-top:70px;
+  background:radial-gradient(ellipse 60% 60% at 50% 100%, rgba(124,58,237,.22), transparent 70%); }
+.eyebrow{ font-size:15px; letter-spacing:.1em; text-transform:uppercase; color:var(--violet-soft); margin-bottom:18px; }
+#contacto h2{ font-size:clamp(44px, 7vw, 96px); max-width:900px; margin:0 auto 22px; }
+#contacto .lead{ color:var(--text-muted); font-size:19px; max-width:460px; margin:0 auto 40px; }
+.contact-row{ display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
+.contact-card{
+  display:flex; align-items:center; gap:14px; min-width:250px;
+  padding:16px 22px; border-radius:16px; text-align:left;
+  background:var(--bg-2); border:1px solid var(--hairline);
+  transition:transform .35s var(--ease), border-color .35s;
+}
+.contact-card:hover{ transform:translateY(-4px); border-color:var(--violet-hot); }
+.contact-icon{ width:42px; height:42px; border-radius:12px; background:var(--violet); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.contact-icon svg{ width:20px; height:20px; }
+.contact-meta{ display:flex; flex-direction:column; }
+.contact-meta .k{ font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); }
+.contact-meta .v{ font-size:17px; margin-top:2px; word-break:break-word; }
 
-  .card .thumb{
-    width:100%; height:100%; object-fit:cover; display:block;
-    background:
-      radial-gradient(circle at 30% 20%, rgba(155,93,229,.28), transparent 55%),
-      linear-gradient(155deg, rgba(255,255,255,.05), rgba(255,255,255,.015) 70%);
-    transition:opacity .5s var(--ease);
-  }
-  .card .thumb span{
-    font-family:var(--font-mono);
-    font-size:11px;
-    letter-spacing:.12em;
-    text-transform:uppercase;
-    color:var(--text-muted);
-    text-align:center;
-    padding:0 20px;
-  }
+/* ---------- Footer ---------- */
+footer{ padding:30px 0; border-top:1px solid var(--hairline); }
+.footer-inner{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px; }
+.f-logo{ font-family:var(--font-display); font-size:24px; }
+.f-links{ display:flex; gap:22px; }
+.f-links a{ color:var(--text-muted); font-size:16px; padding:12px 0; }
+.f-links a:hover{ color:var(--text); }
+.f-meta{ color:var(--text-muted); font-size:15px; }
 
-  /* Video de vista previa (silencioso) — se reproduce automáticamente */
-  .card .preview{
-    position:absolute; inset:0;
-    width:100%; height:100%;
-    object-fit:cover;
-    opacity:1;
-    pointer-events:none;
-  }
+/* ---------- Modal de video ---------- */
+.video-modal{
+  position:fixed; inset:0; z-index:200;
+  display:flex; align-items:center; justify-content:center; padding:24px;
+  background:rgba(5,3,10,.88); backdrop-filter:blur(12px);
+  opacity:0; transition:opacity .3s var(--ease);
+}
+.video-modal[hidden]{ display:none; }
+.video-modal.open{ opacity:1; }
+.video-modal-inner{
+  position:relative; display:flex; flex-direction:column; align-items:center;
+  border-radius:20px; overflow:hidden; background:#000;
+  border:1px solid rgba(183,148,246,.35); box-shadow:0 40px 90px -20px rgba(0,0,0,.8);
+}
+.modal-player{ width:min(960px, 88vw); aspect-ratio:16/9; max-height:80vh; }
+.video-modal-inner.is-vertical .modal-player{ width:min(400px, 88vw, calc(80vh * 9 / 16)); aspect-ratio:9/16; }
+.modal-player iframe{ width:100%; height:100%; display:block; border:0; background:#000; }
+.modal-close{
+  position:absolute; top:10px; right:10px; z-index:2;
+  width:44px; height:44px; border-radius:50%;
+  background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.2);
+  font-size:22px; line-height:1; cursor:pointer;
+}
+.modal-close:hover{ background:var(--violet); }
+.modal-out{ display:block; width:100%; padding:12px; text-align:center; font-size:16px; color:var(--violet-soft); background:var(--bg-2); }
+.modal-out[hidden]{ display:none; }
 
-  .play-btn{
-    position:absolute; inset:0;
-    display:flex; align-items:center; justify-content:center;
-    background:rgba(8,7,10,0);
-    transition:background .35s var(--ease);
+/* =====================================================================
+   RESPONSIVE
+   ===================================================================== */
+@media (max-width:980px){
+  .grid-h{ grid-template-columns:repeat(2, 1fr); }
+  .grid-h .featured{ grid-row:auto; }
+  .format-note{ aspect-ratio:16/9; }
+  .grid-v{ grid-template-columns:repeat(2, 1fr); }
+}
+@media (max-width:860px){
+  .nav-toggle{
+    display:flex; flex-direction:column; justify-content:center; gap:5px;
+    width:44px; height:44px; padding:0 11px;
+    background:transparent; border:0; cursor:pointer;
   }
-  .play-btn::after{
-    content:"";
-    width:52px; height:52px;
-    border-radius:50%;
-    background:rgba(255,255,255,.92);
-    box-shadow:0 8px 26px rgba(0,0,0,.4);
-    clip-path:polygon(38% 28%, 38% 72%, 72% 50%);
-    transform:scale(.85);
-    opacity:.92;
-    transition:transform .35s var(--ease), opacity .35s var(--ease);
+  .nav-toggle span{ height:1.5px; background:var(--text); transition:transform .3s, opacity .3s; }
+  .nav-toggle[aria-expanded="true"] span:nth-child(1){ transform:translateY(6.5px) rotate(45deg); }
+  .nav-toggle[aria-expanded="true"] span:nth-child(2){ opacity:0; }
+  .nav-toggle[aria-expanded="true"] span:nth-child(3){ transform:translateY(-6.5px) rotate(-45deg); }
+  .nav-links{
+    position:fixed; top:70px; left:0; right:0;
+    flex-direction:column; align-items:stretch; gap:4px; padding:14px;
+    background:rgba(20,15,31,.98); border:1px solid var(--hairline); border-radius:16px;
+    opacity:0; visibility:hidden; transform:translateY(-10px);
+    transition:opacity .3s var(--ease), transform .3s var(--ease), visibility .3s;
   }
-  .card:hover .play-btn{ background:rgba(8,7,10,.15); }
-  .card:hover .play-btn::after{ transform:scale(1); opacity:1; }
+  .nav-links.open{ opacity:1; visibility:visible; transform:none; }
+  .nav-links a{ padding:12px 10px; border-radius:10px; }
+  .nav-links .nav-cta{ text-align:center; margin-top:6px; }
+  .about-grid{ grid-template-columns:1fr; gap:40px; }
+}
+@media (max-width:560px){
+  .wrap{ padding:0 20px; }
+  .hero{ padding:84px 12px 16px; }
+  .tv{ height:clamp(560px, calc(100svh - 100px), 760px); }
+  .screen{ border-radius:7% / 5%; }
+  .screen-content{ padding:30px 16px 96px; }
+  .lp-top{ transform:translateX(-18%) rotate(-2deg); }
+  .lp-bottom{ transform:translateX(18%) rotate(-2deg); }
+  .screen-bar{ gap:0 16px; }
+  .bar-ver{ display:none; }
+  .screen-bar{ justify-content:center; }
+  .format-note{ display:none; }
+  .grid-h{ grid-template-columns:1fr; }
+  .grid-h .featured{ grid-column:auto; }
+  .contact-card{ width:100%; min-width:0; }
+  .clip-pill{ width:150px; height:210px; }
+  #contacto{ padding:90px 0 70px; }
+}
 
-  .card-caption{
-    position:absolute; left:14px; bottom:12px;
-    font-family:var(--font-mono);
-    font-size:11px; letter-spacing:.08em;
-    color:rgba(255,255,255,.75);
-    background:rgba(0,0,0,.35);
-    padding:4px 10px;
-    border-radius:100px;
-    backdrop-filter:blur(6px);
-    opacity:0; transform:translateY(6px);
-    transition:opacity .3s var(--ease), transform .3s var(--ease);
-  }
-  .card:hover .card-caption{ opacity:1; transform:translateY(0); }
-
-  /* ---------------- MARQUESINA DE CLIPS ---------------- */
-  #marquesina{ padding:70px 0 20px; overflow:hidden; content-visibility:auto; contain-intrinsic-size:420px; }
-  .marquee-viewport{
-    overflow:hidden;
-    width:100%;
-    -webkit-mask-image:linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
-    mask-image:linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
-    padding:10px 0 26px;
-  }
-  .marquee-track{
-    display:flex;
-    gap:20px;
-    width:max-content;
-    animation:marqueeScroll 40s linear infinite;
-    /* Con ~20 videos reproduciéndose a la vez, mover el track sin promoverlo
-       a su propia capa GPU obliga al navegador a repintar todo ese contenido
-       en cada frame junto con el resto de la página -> se nota como trabas.
-       will-change:transform le avisa al navegador con anticipación que cree
-       una capa de composición aparte, así el scroll es solo "mover un
-       bitmap" y no compite con la decodificación de los videos. */
-    will-change:transform;
-  }
-  .marquee-track:hover{ animation-play-state:paused; }
-  @keyframes marqueeScroll{
-    from{ transform:translateX(0); }
-    to{ transform:translateX(-50%); }
-  }
-
-  .clip-pill{
-    position:relative;
-    flex-shrink:0;
-    width:196px;
-    height:262px;
-    border-radius:28px;
-    overflow:hidden;
-    background:rgba(255,255,255,.035);
-    border:1px solid rgba(255,255,255,.10);
-    backdrop-filter:blur(10px);
-    box-shadow:0 20px 46px -22px rgba(0,0,0,.65);
-    transition:transform .45s var(--ease), border-color .4s, box-shadow .4s;
-  }
-  .clip-pill:hover{
-    transform:scale(1.07) translateY(-4px);
-    border-color:rgba(155,93,229,.6);
-    box-shadow:0 26px 56px -18px rgba(91,33,182,.45);
-    z-index:2;
-  }
-  .clip-pill video, .clip-pill .cp-thumb{
-    width:100%; height:100%; object-fit:cover; display:block;
-  }
-  .clip-pill .cp-thumb{
-    background:radial-gradient(circle at 30% 25%, rgba(155,93,229,.32), transparent 60%),
-               linear-gradient(155deg, var(--surface-2), var(--surface) 75%);
-    display:flex; align-items:center; justify-content:center;
-  }
-  .clip-pill .cp-thumb span{
-    font-family:var(--font-mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase;
-    color:var(--text-muted); text-align:center; padding:0 16px;
-  }
-  .clip-badge{
-    position:absolute; left:10px; right:10px; bottom:10px;
-    background:rgba(8,7,10,.55);
-    backdrop-filter:blur(8px);
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:16px;
-    padding:9px 13px;
-    display:flex; flex-direction:column; gap:2px;
-  }
-  .clip-badge .c-style{ font-size:12.5px; font-weight:600; color:var(--text); }
-  .clip-badge .c-tool{
-    font-family:var(--font-mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase;
-    color:var(--violet-soft);
-  }
-
-  @media (max-width:560px){
-    .clip-pill{ width:150px; height:210px; }
-  }
-
-  /* ---------------- SOBRE MÍ ---------------- */
-  #sobre{ padding:90px 0; border-top:1px solid var(--hairline); content-visibility:auto; contain-intrinsic-size:500px; }
-  .about-grid{
-    display:grid;
-    grid-template-columns:1.1fr .9fr;
-    gap:60px;
-    align-items:center;
-  }
-  .about-text p{
-    font-size:17px;
-    line-height:1.7;
-    color:var(--text-muted);
-    margin-bottom:18px;
-  }
-  .about-text p b{ color:var(--text); font-weight:600; }
-  .tags{ display:flex; flex-wrap:wrap; gap:10px; margin-top:26px; }
-  .tag{
-    font-family:var(--font-mono);
-    font-size:12px; letter-spacing:.06em;
-    padding:8px 14px;
-    border:1px solid var(--hairline);
-    border-radius:100px;
-    color:var(--text-muted);
-  }
-  .stat-col{ display:flex; flex-direction:column; gap:0; }
-  .stat{
-    padding:26px 0;
-    border-bottom:1px solid var(--hairline);
-  }
-  .stat:first-child{ padding-top:0; }
-  .stat .num{
-    font-family:var(--font-display);
-    font-weight:700;
-    font-size:44px;
-    letter-spacing:-.02em;
-    background:linear-gradient(180deg, #fff, var(--violet-soft));
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-  }
-  .stat .label{ color:var(--text-muted); font-size:13.5px; margin-top:4px; }
-
-  /* ---------------- CONTACTO ---------------- */
-  #contacto{
-    padding:130px 0 100px;
-    text-align:center;
-    border-top:1px solid var(--hairline);
-    position:relative;
-    overflow:hidden;
-    content-visibility:auto;
-    contain-intrinsic-size:420px;
-  }
-  #contacto .glow{ opacity:.7; }
-  #contacto .eyebrow{ justify-content:center; margin-left:auto; margin-right:auto; }
-  #contacto h2{
-    font-family:var(--font-display);
-    font-weight:700;
-    font-size:clamp(38px, 6vw, 68px);
-    letter-spacing:-.03em;
-    line-height:1.05;
-    max-width:760px;
-    margin:0 auto 22px;
-    z-index:2; position:relative;
-  }
-  #contacto .lead{
-    color:var(--text-muted);
-    font-size:16.5px;
-    max-width:460px;
-    margin:0 auto 44px;
-    z-index:2; position:relative;
-  }
-  .contact-row{
-    display:flex; gap:16px; justify-content:center; flex-wrap:wrap;
-    z-index:2; position:relative;
-  }
-  .contact-card{
-    display:flex; align-items:center; gap:14px;
-    padding:16px 24px;
-    border-radius:16px;
-    background:var(--surface);
-    border:1px solid var(--hairline);
-    min-width:250px;
-    transition:transform .35s var(--ease), border-color .35s;
-    text-align:left;
-  }
-  .contact-card:hover{ transform:translateY(-4px); border-color:rgba(155,93,229,.5); }
-  .contact-icon{
-    width:42px; height:42px; border-radius:12px;
-    background:linear-gradient(155deg, var(--violet), var(--violet-deep));
-    display:flex; align-items:center; justify-content:center;
-    flex-shrink:0;
-  }
-  .contact-icon svg{ width:20px; height:20px; }
-  .contact-meta .k{ font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); font-family:var(--font-mono); }
-  .contact-meta .v{ font-size:15px; font-weight:600; margin-top:2px; }
-
-  /* ---------------- FOOTER ---------------- */
-  footer{
-    padding:34px 0;
-    border-top:1px solid var(--hairline);
-    display:flex; align-items:center; justify-content:space-between;
-    flex-wrap:wrap; gap:14px;
-  }
-  footer .f-logo{
-    font-family:var(--font-display); font-weight:700; font-size:14px; letter-spacing:.1em;
-  }
-  footer .f-meta{ color:var(--text-muted); font-size:13px; }
-  footer .f-links{ display:flex; gap:22px; }
-  footer .f-links a{ color:var(--text-muted); font-size:13px; transition:color .25s; }
-  footer .f-links a:hover{ color:var(--text); }
-
-  /* ---------------- RESPONSIVE ---------------- */
-  @media (max-width:860px){
-    .nav-links{
-      position:fixed; top:78px; right:20px; left:20px;
-      background:rgba(18,16,22,.97);
-      border:1px solid var(--hairline);
-      border-radius:16px;
-      flex-direction:column; align-items:stretch;
-      padding:18px;
-      gap:4px;
-      transform:translateY(-14px); opacity:0; pointer-events:none;
-      transition:all .35s var(--ease);
-    }
-    .nav-links.open{ transform:translateY(0); opacity:1; pointer-events:auto; }
-    .nav-links a{ padding:12px 8px; border-radius:10px; }
-    .nav-links a:hover{ background:rgba(255,255,255,.04); }
-    .nav-cta{ margin-top:6px; text-align:center; }
-    .nav-toggle{
-      display:flex; flex-direction:column; gap:5px; justify-content:center;
-      width:34px; height:34px; cursor:pointer; z-index:110;
-    }
-    .nav-toggle span{ width:100%; height:1.5px; background:var(--text); transition:.3s; }
-
-    .grid-h, .grid-v{ grid-template-columns:repeat(2,1fr); max-width:none; }
-    .about-grid{ grid-template-columns:1fr; gap:40px; }
-  }
-  @media (max-width:560px){
-    .wrap{ padding:0 22px; }
-    .grid-h, .grid-v{ grid-template-columns:1fr; }
-    .contact-card{ width:100%; }
-    #contacto{ padding:100px 0 70px; }
-  }
-
-  /* ---------------- MODAL DE VIDEO (con sonido) ---------------- */
-  .video-modal{
-    position:fixed; inset:0;
-    z-index:200;
-    display:flex; align-items:center; justify-content:center;
-    padding:26px;
-    background:rgba(6,5,8,.86);
-    backdrop-filter:blur(14px);
-    opacity:0; pointer-events:none;
-    transition:opacity .35s var(--ease);
-  }
-  .video-modal.open{ opacity:1; pointer-events:auto; }
-  .video-modal-inner{
-    position:relative;
-    max-width:min(920px, 92vw);
-    max-height:88vh;
-    border-radius:20px;
-    overflow:hidden;
-    background:#000;
-    border:1px solid rgba(255,255,255,.10);
-    box-shadow:0 40px 90px -20px rgba(0,0,0,.7);
-    transform:scale(.94);
-    transition:transform .35s var(--ease);
-  }
-  .video-modal.open .video-modal-inner{ transform:scale(1); }
-  .video-modal-inner.is-vertical{
-    width:min(420px, 92vw);
-  }
-  .modal-player{
-    display:block;
-    width:min(920px, 88vw);
-    aspect-ratio:16/9;
-    max-height:82vh;
-  }
-  .video-modal-inner.is-vertical .modal-player{
-    width:min(380px, 88vw);
-    aspect-ratio:9/16;
-  }
-  .modal-player iframe{
-    width:100%; height:100%;
-    display:block;
-    border:0;
-  }
-  .modal-close{
-    position:absolute; top:12px; right:12px;
-    width:38px; height:38px;
-    border-radius:50%;
-    background:rgba(0,0,0,.55);
-    border:1px solid rgba(255,255,255,.15);
-    color:#fff;
-    font-size:20px; line-height:1;
-    display:flex; align-items:center; justify-content:center;
-    cursor:pointer;
-    transition:background .25s, transform .25s var(--ease);
-    z-index:2;
-  }
-  .modal-close:hover{ background:rgba(155,93,229,.65); transform:rotate(90deg); }
-
-  .sound-hint{
-    position:absolute; top:14px; left:14px;
-    display:flex; align-items:center; gap:6px;
-    font-family:var(--font-mono);
-    font-size:10px; letter-spacing:.06em; text-transform:uppercase;
-    color:rgba(255,255,255,.8);
-    background:rgba(0,0,0,.4);
-    padding:5px 10px;
-    border-radius:100px;
-    backdrop-filter:blur(6px);
-    opacity:0; transform:translateY(-4px);
-    transition:opacity .3s var(--ease), transform .3s var(--ease);
-  }
-  .card:hover .sound-hint{ opacity:1; transform:translateY(0); }
-
-  @media (prefers-reduced-motion: reduce){
-    .grid-bg::before, .hero-float, .marquee-track, .glow{ animation:none !important; opacity:1 !important; }
-    .marquee-track{ transform:none !important; }
-    *{ scroll-behavior:auto !important; }
-  }
+/* =====================================================================
+   MOVIMIENTO REDUCIDO: sin intro, sin marquesina animada, sin entradas
+   ===================================================================== */
+@media (prefers-reduced-motion: reduce){
+  html{ scroll-behavior:auto; }
+  .hero-anim, .tw-c, html.crt-play:not(.crt-done) .screen{ animation:none; opacity:1; }
+  .js .reveal{ opacity:1; transform:none; transition:none; }
+  #marqueeToggle{ display:none; }
+  .marquee-viewport{ overflow-x:auto; }
+  .marquee-track{ animation:none; }
+  .card, .clip-pill, .btn{ transition:none; }
+  .btn:active{ scale:1; }
+}
