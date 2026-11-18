@@ -433,6 +433,58 @@ html.crt-play:not(.crt-done) .hero-anim{ --base:1500ms; }
 }
 .reel-big{ font-family:var(--font-display); font-size:clamp(60px, 7.5vw, 104px); line-height:1; text-shadow:.05em .05em 0 rgba(46,12,110,.6); }
 
+/* ---------- Precios ---------- */
+#precios{ padding:100px 0 90px; border-top:1px solid var(--hairline); scroll-margin-top:70px; }
+.cur-switch{ display:flex; gap:6px; margin-top:6px; }
+.tiers{ display:grid; grid-template-columns:repeat(3, 1fr); gap:18px; margin-bottom:28px; }
+.tier{
+  padding:24px 24px 26px; border-radius:var(--radius);
+  background:var(--bg-2); border:1px solid var(--hairline);
+}
+.tier-hot{
+  border-color:rgba(183,148,246,.55);
+  background:radial-gradient(ellipse at 80% 0%, rgba(124,58,237,.35), transparent 70%), var(--bg-2);
+}
+.tier-n{ font-family:var(--font-mono); font-size:12px; letter-spacing:.14em; color:var(--violet-soft); }
+.tier h3{ font-weight:400; font-size:24px; margin:8px 0 2px; }
+.tier-from{ color:var(--text-muted); font-size:16px; margin-bottom:16px; }
+.tier-from b{ color:var(--text); font-weight:400; font-size:30px; margin-left:4px; }
+.tier-hot .tier-from b{ color:var(--violet-hot); }
+.tier ul{ list-style:none; display:flex; flex-direction:column; gap:7px; }
+.tier li{ font-size:16px; color:var(--text-muted); padding-left:16px; position:relative; }
+.tier li::before{ content:""; position:absolute; left:0; top:.62em; width:6px; height:6px; border-radius:50%; background:var(--violet-hot); }
+
+.price-table{ overflow-x:auto; border-radius:var(--radius); border:1px solid var(--hairline); background:var(--bg-2); }
+.price-table table{ width:100%; border-collapse:collapse; min-width:620px; }
+.price-table th, .price-table td{ padding:16px 20px; text-align:right; border-bottom:1px solid var(--hairline); }
+.price-table tr:last-child th, .price-table tr:last-child td{ border-bottom:0; }
+.price-table thead th{ font-family:var(--font-mono); font-weight:400; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--text-muted); }
+.price-table thead th:first-child, .price-table tbody th{ text-align:left; }
+.price-table tbody th{ font-weight:400; font-size:17px; }
+.price-table tbody th small{ display:block; font-size:13px; color:var(--text-muted); margin-top:2px; }
+.price-table td{ font-size:20px; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.price-table td:last-child{ color:var(--violet-hot); }
+.price-note{ color:var(--text-muted); font-size:15px; margin:14px 4px 56px; }
+
+.extras{ margin-bottom:56px; }
+.extras-list{ list-style:none; display:grid; grid-template-columns:repeat(2, 1fr); gap:0 40px; }
+.extras-list li{ display:flex; justify-content:space-between; gap:16px; padding:14px 0; border-bottom:1px solid var(--hairline); font-size:17px; }
+.extras-list b{ font-weight:400; white-space:nowrap; font-variant-numeric:tabular-nums; }
+
+.steps{ list-style:none; counter-reset:step; display:grid; grid-template-columns:repeat(5, 1fr); gap:14px; }
+.steps li{
+  counter-increment:step; position:relative;
+  padding:44px 18px 20px; border-radius:var(--radius);
+  background:var(--bg-2); border:1px solid var(--hairline);
+  font-size:15px; line-height:1.5; color:var(--text-muted);
+}
+.steps li::before{ content:"0" counter(step); position:absolute; top:16px; left:18px; font-family:var(--font-mono); font-size:12px; letter-spacing:.14em; color:var(--violet-soft); }
+.steps li b{ display:block; color:var(--text); font-weight:400; font-size:19px; margin-bottom:6px; }
+.pay-note{ color:var(--text-muted); font-size:15px; margin:16px 4px 28px; }
+.price-cta{ margin:0 auto; }
+.process{ display:flex; flex-direction:column; }
+.lang-btn{ min-height:36px; padding:0 14px; font-size:14px; letter-spacing:.08em; }
+
 /* ---------- Sobre mí ---------- */
 #sobre{ padding:90px 0; border-top:1px solid var(--hairline); scroll-margin-top:70px; }
 .about-grid{ display:grid; grid-template-columns:1.1fr .9fr; gap:60px; align-items:center; }
@@ -512,6 +564,9 @@ footer{ padding:30px 0; border-top:1px solid var(--hairline); }
   .grid-h .featured{ grid-row:auto; }
   .format-note{ aspect-ratio:16/9; }
   .grid-v{ grid-template-columns:repeat(2, 1fr); }
+  .tiers{ grid-template-columns:1fr; }
+  .steps{ grid-template-columns:repeat(2, 1fr); }
+  .extras-list{ grid-template-columns:1fr; }
 }
 @media (max-width:860px){
   .nav-toggle{
@@ -551,6 +606,8 @@ footer{ padding:30px 0; border-top:1px solid var(--hairline); }
   .grid-h .featured{ grid-column:auto; }
   .contact-card{ width:100%; min-width:0; }
   .clip-pill{ width:150px; height:210px; }
+  .steps{ grid-template-columns:1fr; }
+  #precios{ padding:80px 0 70px; }
   #contacto{ padding:90px 0 70px; }
 }
 

@@ -56,10 +56,12 @@
       <span></span><span></span><span></span>
     </button>
     <div class="nav-links" id="navLinks">
-      <a href="#trabajos">Trabajos</a>
-      <a href="#sobre">Sobre mí</a>
-      <a href="#contacto">Contacto</a>
-      <a href="mailto:contact.scastaneda@gmail.com" class="nav-cta btn btn-tint">Hablemos</a>
+      <a href="#trabajos" data-i18n="nav_work">Trabajos</a>
+      <a href="#precios" data-i18n="nav_prices">Precios</a>
+      <a href="#sobre" data-i18n="nav_about">Sobre mí</a>
+      <a href="#contacto" data-i18n="nav_contact">Contacto</a>
+      <button type="button" class="btn btn-chip lang-btn" id="langBtn" aria-label="Switch to English">EN</button>
+      <a href="mailto:contact.scastaneda@gmail.com?subject=Proyecto%20de%20video" class="nav-cta btn btn-tint mail-cta" data-i18n="nav_cta">Hablemos</a>
     </div>
   </nav>
 </header>
@@ -74,17 +76,17 @@
       <div class="screen-fx" aria-hidden="true"></div>
 
       <div class="screen-content">
-        <p class="label-pill lp-top hero-anim">Editor de video</p>
+        <p class="label-pill lp-top hero-anim" data-i18n="pill_editor">Editor de video</p>
         <h1 class="wordmark hero-anim" id="heroTitle">SIAN&nbsp;T</h1>
-        <p class="label-pill lp-bottom hero-anim">Director creativo</p>
-        <p class="hero-sub hero-anim">
+        <p class="label-pill lp-bottom hero-anim" data-i18n="pill_director">Director creativo</p>
+        <p class="hero-sub hero-anim" data-i18n="hero_sub">
           Edición dinámica para <b>YouTubers</b>, <b>Streamers</b> y <b>Formato Vertical</b> (TikTok / Instagram).
         </p>
         <div class="hero-ctas hero-anim">
-          <a href="#trabajos" class="btn btn-primary">Ver trabajos
+          <a href="#trabajos" class="btn btn-primary"><span data-i18n="cta_work">Ver trabajos</span>
             <span class="btn-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3.5 8.5 8 13l4.5-4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           </a>
-          <a href="#contacto" class="btn btn-soft">Contáctame</a>
+          <a href="#precios" class="btn btn-soft" data-i18n="cta_prices">Ver precios</a>
         </div>
       </div>
 
@@ -101,7 +103,7 @@
 <section id="marquesina" aria-labelledby="tecnicasTitle">
   <div class="wrap">
     <div class="section-head reveal">
-      <h2 id="tecnicasTitle" data-tw>Técnicas & Recursos</h2>
+      <h2 id="tecnicasTitle" data-tw data-i18n="h_tech">Técnicas & Recursos</h2>
       <button type="button" class="btn btn-chip" id="marqueeToggle" aria-pressed="false">Pausar clips</button>
     </div>
   </div>
@@ -130,23 +132,23 @@
 <section id="trabajos" aria-labelledby="trabajosTitle">
   <div class="wrap">
     <div class="section-head reveal">
-      <h2 id="trabajosTitle" data-tw>Mis Trabajos</h2>
-      <p>Una selección de proyectos recientes en formato horizontal y vertical.</p>
+      <h2 id="trabajosTitle" data-tw data-i18n="h_work">Mis Trabajos</h2>
+      <p data-i18n="work_sub">Una selección de proyectos recientes en formato horizontal y vertical.</p>
     </div>
 
     <!-- HORIZONTAL -->
     <div class="format-block">
-      <h3 class="format-label"><span class="pill" aria-hidden="true"></span>Formato horizontal — YouTube / Streaming</h3>
+      <h3 class="format-label"><span class="pill" aria-hidden="true"></span><span data-i18n="fmt_h">Formato horizontal — YouTube / Streaming</span></h3>
       <div class="grid-h">
 
         <!-- DESTACADO: vlog (empieza en el segundo 66) -->
         <article class="card h featured" data-yt="si0qEYB3FXY" data-start="66" data-orientation="h">
           <img class="thumb" src="https://i.ytimg.com/vi/si0qEYB3FXY/maxresdefault.jpg" alt="" width="1280" height="720" loading="lazy" decoding="async">
           <video class="preview" muted loop playsinline preload="none" aria-hidden="true"><source src="videos/preview-vlog.mp4" type="video/mp4"></video>
-          <span class="card-tag">Destacado</span>
+          <span class="card-tag" data-i18n="tag_feat">Destacado</span>
           <div class="card-info">
-            <span class="card-kind">Vlog / evento</span>
-            <span class="card-title">Fui al primer concierto de BTS en Colombia</span>
+            <span class="card-kind" data-i18n="k_vlog">Vlog / evento</span>
+            <span class="card-title" data-i18n="t_bts">Fui al primer concierto de BTS en Colombia</span>
           </div>
           <span class="play-btn" aria-hidden="true"></span>
           <button type="button" class="card-hit" aria-label="Reproducir el vlog «Fui al primer concierto de BTS en Colombia» desde el minuto 1:06"></button>
@@ -161,23 +163,23 @@
         <article class="card h" data-yt="qArt4dEfN1M" data-orientation="h">
           <img class="thumb" src="https://i.ytimg.com/vi/qArt4dEfN1M/hqdefault.jpg" alt="" width="480" height="360" loading="lazy" decoding="async">
           <video class="preview" muted loop playsinline preload="none" aria-hidden="true"><source src="videos/horizontal-1.mp4" type="video/mp4"></video>
-          <div class="card-info"><span class="card-kind">Video Tutorial</span></div>
+          <div class="card-info"><span class="card-kind" data-i18n="k_tutorial">Tutorial</span><span class="card-title">Aaron Cabello</span></div>
           <span class="play-btn" aria-hidden="true"></span>
-          <button type="button" class="card-hit" aria-label="Reproducir: Video Tutorial"></button>
+          <button type="button" class="card-hit" aria-label="Reproducir: tutorial para Aaron Cabello"></button>
         </article>
 
         <article class="card h" data-yt="bfgBDlCZyvs" data-orientation="h">
           <img class="thumb" src="https://i.ytimg.com/vi/bfgBDlCZyvs/hqdefault.jpg" alt="" width="480" height="360" loading="lazy" decoding="async">
           <video class="preview" muted loop playsinline preload="none" aria-hidden="true"><source src="videos/horizontal-2.mp4" type="video/mp4"></video>
-          <div class="card-info"><span class="card-kind">Streaming / Gaming</span></div>
+          <div class="card-info"><span class="card-kind" data-i18n="k_stream">Stream / Gaming</span><span class="card-title">Fairlygab</span></div>
           <span class="play-btn" aria-hidden="true"></span>
-          <button type="button" class="card-hit" aria-label="Reproducir: Streaming / Gaming"></button>
+          <button type="button" class="card-hit" aria-label="Reproducir: stream de Fairlygab"></button>
         </article>
 
         <article class="card h" data-yt="mEtmCC7QEhY" data-orientation="h">
           <img class="thumb" src="https://i.ytimg.com/vi/mEtmCC7QEhY/hqdefault.jpg" alt="" width="480" height="360" loading="lazy" decoding="async">
           <video class="preview" muted loop playsinline preload="none" aria-hidden="true"><source src="videos/horizontal-3.mp4" type="video/mp4"></video>
-          <div class="card-info"><span class="card-kind">Divulgación científica · 012-s</span></div>
+          <div class="card-info"><span class="card-kind" data-i18n="k_science">Divulgación científica · 012-s</span><span class="card-title" data-i18n="t_universe">¿Cómo será el fin del universo?</span></div>
           <span class="play-btn" aria-hidden="true"></span>
           <button type="button" class="card-hit" aria-label="Reproducir: Divulgación científica para 012-s"></button>
         </article>
@@ -187,7 +189,7 @@
 
     <!-- VERTICAL -->
     <div class="format-block">
-      <h3 class="format-label"><span class="pill" aria-hidden="true"></span>Formato vertical — TikTok / Instagram</h3>
+      <h3 class="format-label"><span class="pill" aria-hidden="true"></span><span data-i18n="fmt_v">Formato vertical — TikTok / Instagram</span></h3>
       <div class="grid-v">
 
         <!-- DESTACADO: Reel de Instagram. Portada propia (sin cargar nada de Instagram);
@@ -197,10 +199,10 @@
             <span class="reel-big">Reel</span>
           </div>
           <video class="preview" muted loop playsinline preload="none" aria-hidden="true"><source src="videos/preview-reel.mp4" type="video/mp4"></video>
-          <span class="card-tag">Destacado</span>
+          <span class="card-tag" data-i18n="tag_feat">Destacado</span>
           <div class="card-info">
             <span class="card-kind">Reel · Instagram</span>
-            <a class="card-link" href="https://www.instagram.com/reel/DccdBTqNiai/" target="_blank" rel="noopener">Ver en Instagram ↗</a>
+            <a class="card-link" href="https://www.instagram.com/reel/DccdBTqNiai/" target="_blank" rel="noopener" data-i18n="ig_see">Ver en Instagram ↗</a>
           </div>
           <span class="play-btn" aria-hidden="true"></span>
           <button type="button" class="card-hit" aria-label="Reproducir el Reel de Instagram aquí"></button>
@@ -209,7 +211,7 @@
         <article class="card v" data-yt="rwRBBaMZOsU" data-orientation="v">
           <img class="thumb" src="https://i.ytimg.com/vi/rwRBBaMZOsU/hqdefault.jpg" alt="" width="480" height="360" loading="lazy" decoding="async">
           <video class="preview" muted loop playsinline preload="none" aria-hidden="true"><source src="videos/vertical-1.mp4" type="video/mp4"></video>
-          <div class="card-info"><span class="card-kind">Clip Viral</span></div>
+          <div class="card-info"><span class="card-kind" data-i18n="k_viral">Clip viral</span></div>
           <span class="play-btn" aria-hidden="true"></span>
           <button type="button" class="card-hit" aria-label="Reproducir: Clip Viral"></button>
         </article>
@@ -217,15 +219,15 @@
         <article class="card v" data-yt="jzu3sxp31BQ" data-orientation="v">
           <img class="thumb" src="https://i.ytimg.com/vi/jzu3sxp31BQ/hqdefault.jpg" alt="" width="480" height="360" loading="lazy" decoding="async">
           <video class="preview" muted loop playsinline preload="none" aria-hidden="true"><source src="videos/vertical-2.mp4" type="video/mp4"></video>
-          <div class="card-info"><span class="card-kind">Reel de Marca</span></div>
+          <div class="card-info"><span class="card-kind" data-i18n="k_brand">Reel de marca</span><span class="card-title">Adria Sola Pastor</span></div>
           <span class="play-btn" aria-hidden="true"></span>
-          <button type="button" class="card-hit" aria-label="Reproducir: Reel de Marca"></button>
+          <button type="button" class="card-hit" aria-label="Reproducir: reel de marca para Adria Sola Pastor"></button>
         </article>
 
         <article class="card v" data-yt="QSQUZNpOKIk" data-orientation="v">
           <img class="thumb" src="https://i.ytimg.com/vi/QSQUZNpOKIk/hqdefault.jpg" alt="" width="480" height="360" loading="lazy" decoding="async">
           <video class="preview" muted loop playsinline preload="none" aria-hidden="true"><source src="videos/vertical-3.mp4" type="video/mp4"></video>
-          <div class="card-info"><span class="card-kind">Short de Streamer</span></div>
+          <div class="card-info"><span class="card-kind" data-i18n="k_streamer">Short de streamer</span></div>
           <span class="play-btn" aria-hidden="true"></span>
           <button type="button" class="card-hit" aria-label="Reproducir: Short de Streamer"></button>
         </article>
@@ -235,14 +237,98 @@
   </div>
 </section>
 
+<!-- ================= PRECIOS =================
+     EDITAR: mismos precios que la lista en PDF. data-usd / data-cop en cada precio. -->
+<section id="precios" aria-labelledby="preciosTitle">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <h2 id="preciosTitle" data-tw data-i18n="h_prices">Precios</h2>
+      <p data-i18n="prices_sub">Tres niveles de edición. Precio por video; la cotización exacta depende del material y las referencias.</p>
+      <div class="cur-switch" role="group" aria-label="Moneda">
+        <button type="button" class="btn btn-chip" data-cur="usd" aria-pressed="true">USD</button>
+        <button type="button" class="btn btn-chip" data-cur="cop" aria-pressed="false">COP</button>
+      </div>
+    </div>
+
+    <div class="tiers reveal">
+      <article class="tier">
+        <span class="tier-n">01</span>
+        <h3 data-i18n="tier1">Edición Básica</h3>
+        <p class="tier-from"><span data-i18n="from">desde</span> <b class="price" data-usd="10" data-cop="30000"></b></p>
+        <ul data-i18n="tier1_list">
+          <li>Cortes y ritmo</li><li>Música y mezcla de audio</li><li>Limpieza de voz</li><li>Subtítulos simples</li><li>Exportación lista para subir</li>
+        </ul>
+      </article>
+      <article class="tier">
+        <span class="tier-n">02</span>
+        <h3 data-i18n="tier2">Edición Dinámica</h3>
+        <p class="tier-from"><span data-i18n="from">desde</span> <b class="price" data-usd="20" data-cop="65000"></b></p>
+        <ul data-i18n="tier2_list">
+          <li>Todo lo de Básica</li><li>Memes, zooms y dinamismo</li><li>Textos animados</li><li>Efectos y transiciones</li><li>Diseño de sonido (SFX al ritmo)</li>
+        </ul>
+      </article>
+      <article class="tier tier-hot">
+        <span class="tier-n">03</span>
+        <h3>Motion Graphics</h3>
+        <p class="tier-from"><span data-i18n="from">desde</span> <b class="price" data-usd="35" data-cop="110000"></b></p>
+        <ul data-i18n="tier3_list">
+          <li>Todo lo de Dinámica</li><li>Animaciones 2D en After Effects</li><li>Títulos y gráficos a medida</li><li>Tracking de cámara y parallax</li><li>Animación de producto</li>
+        </ul>
+      </article>
+    </div>
+
+    <div class="price-table reveal" role="region" aria-labelledby="preciosTitle" tabindex="0">
+      <table>
+        <thead>
+          <tr><th scope="col" data-i18n="th_service">Servicio</th><th scope="col" data-i18n="tier1">Edición Básica</th><th scope="col" data-i18n="tier2">Edición Dinámica</th><th scope="col">Motion Graphics</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row"><span data-i18n="r_yt">Video de YouTube</span><small data-i18n="r_yt_d">hasta 10 min</small></th><td class="price" data-usd="30" data-cop="95000"></td><td class="price" data-usd="65" data-cop="205000"></td><td class="price" data-usd="110" data-cop="350000"></td></tr>
+          <tr><th scope="row"><span data-i18n="r_vlog">Vlog / evento</span><small data-i18n="r_vlog_d">hasta 10 min · incluye revisar 2 h de material</small></th><td class="price" data-usd="40" data-cop="125000"></td><td class="price" data-usd="80" data-cop="255000"></td><td class="price" data-usd="120" data-cop="380000"></td></tr>
+          <tr><th scope="row"><span data-i18n="r_vert">Video vertical largo</span><small data-i18n="r_vert_d">hasta 5 min · vlogs, tutoriales</small></th><td class="price" data-usd="20" data-cop="65000"></td><td class="price" data-usd="35" data-cop="110000"></td><td class="price" data-usd="65" data-cop="205000"></td></tr>
+          <tr><th scope="row"><span>Short / Reel / TikTok</span><small data-i18n="r_short_d">hasta 90 s</small></th><td class="price" data-usd="10" data-cop="30000"></td><td class="price" data-usd="20" data-cop="65000"></td><td class="price" data-usd="35" data-cop="110000"></td></tr>
+          <tr><th scope="row"><span data-i18n="r_trailer">Trailer / teaser</span><small data-i18n="r_short_d">hasta 90 s</small></th><td class="price" data-usd="20" data-cop="65000"></td><td class="price" data-usd="35" data-cop="110000"></td><td class="price" data-usd="65" data-cop="205000"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="price-note reveal" data-i18n="price_note">Minuto extra: +$3 / +$5 / +$8 USD según el nivel. Paquetes: semanal (desde 2 videos) −10 % · mensual (desde 8 videos) −20 %. Entrega urgente: 48 h +30 % · 24 h +50 %.</p>
+
+    <div class="extras reveal">
+      <h3 class="format-label"><span class="pill" aria-hidden="true"></span><span data-i18n="h_extras">Servicios adicionales</span></h3>
+      <ul class="extras-list">
+        <li><span data-i18n="x_thumb">Miniatura para YouTube</span><b class="price" data-usd="8" data-cop="25000"></b></li>
+        <li><span data-i18n="x_subs">Subtítulos completos (videos largos)</span><b class="price" data-usd="5" data-cop="15000"></b></li>
+        <li><span data-i18n="x_vert">Versión vertical de un video horizontal</span><b class="price" data-usd="8" data-cop="25000"></b></li>
+        <li><span data-i18n="x_rev">Ronda de revisión adicional</span><b class="price" data-usd="5" data-cop="15000"></b></li>
+        <li><span data-i18n="x_raw">Hora adicional de material en bruto</span><b class="price" data-usd="5" data-cop="15000"></b></li>
+      </ul>
+    </div>
+
+    <div class="process reveal">
+      <h3 class="format-label"><span class="pill" aria-hidden="true"></span><span data-i18n="h_process">Cómo trabajo</span></h3>
+      <ol class="steps" data-i18n="steps">
+        <li><b>Brief</b> Me envías el material, lo que quieres y 1–2 referencias. Te paso la cotización (válida 15 días).</li>
+        <li><b>Anticipo</b> 50 % para empezar; los plazos corren desde ahí (días hábiles, lunes a sábado).</li>
+        <li><b>Primer corte</b> Short o reel: 1–2 días. Video largo básico: 3 días. Dinámico: 5–7 días.</li>
+        <li><b>Revisiones</b> 2 rondas incluidas: envía los cambios en un solo mensaje, con el minuto exacto.</li>
+        <li><b>Entrega</b> MP4 por Drive o WeTransfer al completar el 50 % restante. Música y SFX con licencia.</li>
+      </ol>
+      <p class="pay-note" data-i18n="pay_note">Pagos: Colombia en COP por Nequi o Nu (llave Bre-B). Internacional en USD por PayPal o Binance.</p>
+      <a href="mailto:contact.scastaneda@gmail.com?subject=Cotizaci%C3%B3n%20de%20video" class="btn btn-primary price-cta mail-cta"><span data-i18n="cta_quote">Pedir cotización</span>
+        <span class="btn-ico" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none"><path d="M3 8h10M8.5 3.5 13 8l-4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </a>
+    </div>
+  </div>
+</section>
+
 <!-- ================= SOBRE MÍ ================= -->
 <section id="sobre" aria-labelledby="sobreTitle">
   <div class="wrap">
     <div class="about-grid">
       <div class="about-text reveal">
-        <h2 class="format-label" id="sobreTitle"><span class="pill" aria-hidden="true"></span>Sobre mí</h2>
-        <p class="about-lead">El objetivo de un buen video no es solo verse bien: <b>es hacer que la gente se quede hasta el final</b>.</p>
-        <p>Me llamo <b>Santiago (SianT)</b>, y combino ritmo, narrativa visual y diseño de sonido para llevar el contenido de <b>Creadores de Contenido</b> y <b>Marcas</b> al siguiente nivel, tanto en formato largo como en <b>TikTok e Instagram</b>.</p>
+        <h2 class="format-label" id="sobreTitle"><span class="pill" aria-hidden="true"></span><span data-i18n="nav_about">Sobre mí</span></h2>
+        <p class="about-lead" data-i18n="about_lead">El objetivo de un buen video no es solo verse bien: <b>es hacer que la gente se quede hasta el final</b>.</p>
+        <p data-i18n="about_body">Me llamo <b>Santiago (SianT)</b>, y combino ritmo, narrativa visual y diseño de sonido para llevar el contenido de <b>Creadores de Contenido</b> y <b>Marcas</b> al siguiente nivel, tanto en formato largo como en <b>TikTok e Instagram</b>.</p>
         <ul class="tags">
           <li class="tag">Premiere Pro</li>
           <li class="tag">After Effects</li>
@@ -253,9 +339,9 @@
       </div>
       <div class="stat-col reveal">
         <!-- EDITAR: cambia estas cifras por las tuyas reales -->
-        <div class="stat"><div class="num">+100</div><div class="label">Videos editados</div></div>
-        <div class="stat"><div class="num">3</div><div class="label">Formatos dominados: YouTube, Streaming, Vertical</div></div>
-        <div class="stat"><div class="num">24h</div><div class="label">Tiempo de respuesta promedio</div></div>
+        <div class="stat"><div class="num">+100</div><div class="label" data-i18n="st_videos">Videos editados</div></div>
+        <div class="stat"><div class="num">2</div><div class="label" data-i18n="st_rev">Rondas de revisión incluidas en cada video</div></div>
+        <div class="stat"><div class="num">24h</div><div class="label" data-i18n="st_resp">Tiempo de respuesta promedio</div></div>
       </div>
     </div>
   </div>
@@ -264,9 +350,9 @@
 <!-- ================= CONTACTO ================= -->
 <section id="contacto" aria-labelledby="contactoTitle">
   <div class="wrap">
-    <p class="eyebrow reveal" data-tw>Disponible para proyectos</p>
-    <h2 class="reveal" id="contactoTitle">Hagamos que tu próximo video <br>sea imposible de ignorar.</h2>
-    <p class="lead reveal">Escríbeme por Instagram, X o correo y cuéntame sobre tu proyecto.</p>
+    <p class="eyebrow reveal" data-tw data-i18n="eyebrow">Disponible para proyectos</p>
+    <h2 class="reveal" id="contactoTitle" data-i18n="contact_h">Hagamos que tu próximo video <br>sea imposible de ignorar.</h2>
+    <p class="lead reveal" data-i18n="contact_lead">Escríbeme por correo, Instagram o X: qué tipo de video es, cuánto material hay y para cuándo lo necesitas. Respondo en menos de 24 h.</p>
 
     <div class="contact-row reveal">
       <!-- EDITAR CONTACTO: Instagram -->
@@ -286,11 +372,11 @@
       </a>
 
       <!-- EDITAR CONTACTO: Correo -->
-      <a href="mailto:contact.scastaneda@gmail.com" class="contact-card">
+      <a href="mailto:contact.scastaneda@gmail.com?subject=Proyecto%20de%20video" class="contact-card mail-cta">
         <span class="contact-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="3" stroke="white" stroke-width="1.7"/><path d="M4 7l8 6 8-6" stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </span>
-        <span class="contact-meta"><span class="k">Correo</span><span class="v">contact.scastaneda@gmail.com</span></span>
+        <span class="contact-meta"><span class="k" data-i18n="k_mail">Correo</span><span class="v">contact.scastaneda@gmail.com</span></span>
       </a>
     </div>
   </div>
@@ -302,10 +388,11 @@
     <span class="f-logo">SIAN T</span>
     <nav class="f-links" aria-label="Pie de página">
       <a href="#trabajos">Trabajos</a>
+      <a href="#precios">Precios</a>
       <a href="#sobre">Sobre mí</a>
       <a href="#contacto">Contacto</a>
     </nav>
-    <span class="f-meta">© 2026 Sian T. Todos los derechos reservados.</span>
+    <span class="f-meta" data-i18n="footer">© 2026 Sian T. Todos los derechos reservados.</span>
   </div>
 </footer>
 

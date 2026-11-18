@@ -29,6 +29,97 @@ if(root.classList.contains('crt-play')){
 }
 
 // ---------------------------------------------------------------
+// IDIOMA (ES / EN) y MONEDA (USD / COP)
+// El español está en el HTML; aquí solo va el inglés.
+// Enlace directo en inglés: ?lang=en  ·  en COP: ?cur=cop
+// ---------------------------------------------------------------
+const EN = {
+  nav_work:'Work', nav_prices:'Pricing', nav_about:'About', nav_contact:'Contact', nav_cta:"Let's talk",
+  pill_editor:'Video editor', pill_director:'Creative director',
+  hero_sub:'High-retention editing for <b>YouTubers</b>, <b>Streamers</b> and <b>Vertical Video</b> (TikTok / Reels / Shorts).',
+  cta_work:'See my work', cta_prices:'See pricing',
+  h_tech:'Techniques & Tools', h_work:'My Work', work_sub:'A selection of recent projects in horizontal and vertical formats.',
+  fmt_h:'Horizontal — YouTube / Streaming', fmt_v:'Vertical — TikTok / Instagram / Shorts',
+  tag_feat:'Featured', k_vlog:'Vlog / event', t_bts:'I went to the first BTS concert in Colombia',
+  k_tutorial:'Tutorial', k_stream:'Stream / Gaming', k_science:'Science explainer · 012-s', t_universe:'How will the universe end?',
+  k_viral:'Viral clip', k_brand:'Brand reel', k_streamer:'Streamer short', ig_see:'View on Instagram ↗',
+  h_prices:'Pricing', prices_sub:'Three editing levels. Price per video; the exact quote depends on your footage and references.',
+  tier1:'Basic Edit', tier2:'Dynamic Edit', from:'from',
+  tier1_list:'<li>Cuts and pacing</li><li>Music and audio mix</li><li>Voice cleanup</li><li>Simple captions</li><li>Upload-ready export</li>',
+  tier2_list:'<li>Everything in Basic</li><li>Memes, zooms and energy</li><li>Animated text</li><li>Effects and transitions</li><li>Sound design (SFX on beat)</li>',
+  tier3_list:'<li>Everything in Dynamic</li><li>2D animation in After Effects</li><li>Custom titles and graphics</li><li>Camera tracking and parallax</li><li>Product animation</li>',
+  th_service:'Service', r_yt:'YouTube video', r_yt_d:'up to 10 min', r_vlog:'Vlog / event', r_vlog_d:'up to 10 min · includes reviewing 2 h of footage',
+  r_vert:'Long vertical video', r_vert_d:'up to 5 min · vlogs, tutorials', r_short_d:'up to 90 s', r_trailer:'Trailer / teaser',
+  price_note:'Extra minute: +$3 / +$5 / +$8 USD by level. Bundles: weekly (2+ videos) −10% · monthly (8+ videos) −20%. Rush delivery: 48 h +30% · 24 h +50%.',
+  h_extras:'Add-ons', x_thumb:'YouTube thumbnail', x_subs:'Full captions (long videos)', x_vert:'Vertical version of a horizontal video',
+  x_rev:'Extra revision round', x_raw:'Extra hour of raw footage',
+  h_process:'How I work',
+  steps:'<li><b>Brief</b> Send me your footage, what you want and 1–2 references. I send a quote (valid 15 days).</li>'+
+        '<li><b>Deposit</b> 50% to start; timelines run from there (business days, Mon–Sat).</li>'+
+        '<li><b>First cut</b> Short or reel: 1–2 days. Basic long-form: 3 days. Dynamic: 5–7 days.</li>'+
+        '<li><b>Revisions</b> 2 rounds included: send all changes in one message, with timestamps.</li>'+
+        '<li><b>Delivery</b> MP4 via Drive or WeTransfer once the remaining 50% is paid. Licensed music and SFX.</li>',
+  pay_note:'Payments in USD via PayPal or Binance (clients in Colombia: COP via Nequi or Nu).',
+  cta_quote:'Get a quote',
+  about_lead:"A good video isn't just about looking good: <b>it's about keeping people watching until the end</b>.",
+  about_body:"I'm <b>Santiago (SianT)</b>. I combine pacing, visual storytelling and sound design to take content from <b>creators</b> and <b>brands</b> to the next level, in long-form and on <b>TikTok and Instagram</b>.",
+  st_videos:'Videos edited', st_rev:'Revision rounds included in every video', st_resp:'Average response time',
+  eyebrow:'Available for projects', contact_h:'Let’s make your next video <br>impossible to ignore.',
+  contact_lead:'Email me or DM me on Instagram or X: what kind of video it is, how much footage you have and when you need it. I reply within 24 h.',
+  k_mail:'Email', footer:'© 2026 Sian T. All rights reserved.'
+};
+const MAIL_SUBJECT = { es:'Proyecto de video', en:'Video editing project' };
+const i18nEls = [...document.querySelectorAll('[data-i18n]')];
+i18nEls.forEach(el => { el.dataset.es = el.innerHTML; });
+const langBtn = document.getElementById('langBtn');
+let lang = 'es';
+
+function applyLang(next){
+  lang = next;
+  root.lang = next;
+  i18nEls.forEach(el => {
+    const key = el.dataset.i18n;
+    el.innerHTML = next === 'en' && EN[key] ? EN[key] : el.dataset.es;
+    if(el.hasAttribute('data-tw')) el.setAttribute('aria-label', el.textContent.trim());
+  });
+  document.querySelectorAll('.mail-cta').forEach(a => {
+    a.href = `mailto:contact.scastaneda@gmail.com?subject=${encodeURIComponent(MAIL_SUBJECT[next])}`;
+  });
+  if(langBtn){
+    langBtn.textContent = next === 'en' ? 'ES' : 'EN';
+    langBtn.setAttribute('aria-label', next === 'en' ? 'Ver en español' : 'Switch to English');
+  }
+  const mt = document.getElementById('marqueeToggle');
+  if(mt){
+    const paused = mt.getAttribute('aria-pressed') === 'true';
+    mt.textContent = next === 'en' ? (paused ? 'Resume clips' : 'Pause clips') : (paused ? 'Reanudar clips' : 'Pausar clips');
+  }
+  try{ localStorage.setItem('lang', next); }catch(e){}
+}
+
+const COP = new Intl.NumberFormat('es-CO');
+function applyCur(cur){
+  document.querySelectorAll('.price').forEach(el => {
+    el.textContent = cur === 'cop' ? `$${COP.format(+el.dataset.cop)} COP` : `$${el.dataset.usd} USD`;
+  });
+  document.querySelectorAll('[data-cur]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.cur === cur)));
+}
+
+(function initLangCur(){
+  const q = new URLSearchParams(location.search);
+  let saved = null;
+  try{ saved = localStorage.getItem('lang'); }catch(e){}
+  const nav = (navigator.language || 'es').toLowerCase();
+  const startLang = ['en','es'].includes(q.get('lang')) ? q.get('lang') : (saved || (nav.startsWith('es') ? 'es' : 'en'));
+  if(startLang !== 'es') applyLang(startLang);
+  else document.querySelectorAll('.mail-cta').forEach(a => a.href = `mailto:contact.scastaneda@gmail.com?subject=${encodeURIComponent(MAIL_SUBJECT.es)}`);
+  const startCur = ['usd','cop'].includes(q.get('cur')) ? q.get('cur') : (nav === 'es-co' && startLang === 'es' ? 'cop' : 'usd');
+  applyCur(startCur);
+  langBtn?.addEventListener('click', () => applyLang(lang === 'en' ? 'es' : 'en'));
+  document.querySelectorAll('[data-cur]').forEach(b => b.addEventListener('click', () => applyCur(b.dataset.cur)));
+})();
+
+// ---------------------------------------------------------------
 // MARQUESINA: duplica los clips (cloneNode, no innerHTML) para el loop infinito.
 // Con movimiento reducido no se anima, así que no hace falta duplicar.
 // ---------------------------------------------------------------
@@ -46,7 +137,7 @@ if(track && !prefersReducedMotion){
   toggle.addEventListener('click', () => {
     const paused = track.classList.toggle('paused');
     toggle.setAttribute('aria-pressed', String(paused));
-    toggle.textContent = paused ? 'Reanudar clips' : 'Pausar clips';
+    toggle.textContent = lang === 'en' ? (paused ? 'Resume clips' : 'Pause clips') : (paused ? 'Reanudar clips' : 'Pausar clips');
   });
 }
 
