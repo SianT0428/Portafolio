@@ -354,11 +354,36 @@ html.crt-play:not(.crt-done) .hero-anim{ --base:1500ms; }
 .format-block{ margin-bottom:72px; }
 .format-block:last-child{ margin-bottom:0; }
 
-/* 5 videos horizontales del mismo tamaño: 3 arriba y 2 centrados abajo */
-.grid-h{ display:grid; grid-template-columns:repeat(6, 1fr); gap:18px; }
-.grid-h .card{ grid-column:span 2; }
-.grid-h .card:nth-child(4){ grid-column:2 / span 2; }
-.grid-h .card:nth-child(5){ grid-column:4 / span 2; }
+/* Tablero horizontal (mismo estilo que «Sobre mí»): GTA 6 y Roblox grandes arriba; 4 más pequeños en un panel oscuro */
+.work-board{
+  display:flex; flex-direction:column; gap:22px;
+  padding:26px; border-radius:30px;
+  background:var(--halftone), radial-gradient(ellipse at 15% 0%, #9A5CF6, var(--violet) 45%, #4A1A9E);
+  box-shadow:0 40px 90px -40px rgba(124,58,237,.8), inset 0 0 0 1px rgba(255,255,255,.18);
+}
+.wb-top{ display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+.wb-top .card{ border:2px solid rgba(255,255,255,.9); border-radius:22px; box-shadow:0 22px 40px -22px rgba(46,12,110,.7); }
+.wb-top .card:hover, .wb-top .card:focus-within{ border-color:#fff; box-shadow:0 28px 50px -22px rgba(46,12,110,.85); }
+.wb-top .card-tag{
+  top:0; left:0; padding:9px 18px 9px 16px; border-radius:0 0 18px 0;
+  background:var(--ink); color:var(--violet-hot);
+  font-family:var(--font-display); font-size:22px; letter-spacing:.04em; text-transform:none; line-height:1;
+}
+.wb-top .card-title{ font-size:clamp(19px, 2.2vw, 28px); }
+.wb-top .play-btn{ width:76px; height:76px; }
+.wb-panel{
+  position:relative; display:grid; grid-template-columns:auto 1fr auto; align-items:stretch;
+  background:#1C1428; padding:18px 6px;
+  clip-path:polygon(34px 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%, 0 34px);
+  border-radius:6px;
+}
+.wb-panel .ab-vert{ font-size:clamp(46px, 5.4vw, 78px); }
+.wb-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; padding:8px 28px; align-content:center; }
+.wb-grid .card{ border-radius:14px; }
+.wb-grid .card-title{ font-size:clamp(14px, 1.4vw, 18px); }
+.wb-grid .card-kind{ font-size:11px; }
+.wb-grid .card-info{ padding:6px 10px; left:8px; right:8px; bottom:8px; }
+.wb-grid .play-btn{ width:44px; height:44px; }
 .grid-v{ display:grid; grid-template-columns:repeat(4, 1fr); gap:18px; }
 
 
@@ -608,9 +633,10 @@ footer{ padding:30px 0; border-top:1px solid var(--hairline); }
    RESPONSIVE
    ===================================================================== */
 @media (max-width:980px){
-  .grid-h{ grid-template-columns:repeat(2, 1fr); }
-  .grid-h .card, .grid-h .card:nth-child(4), .grid-h .card:nth-child(5){ grid-column:auto; }
-  .grid-h .card:nth-child(5){ grid-column:1 / -1; width:calc(50% - 9px); justify-self:center; }
+  .work-board{ padding:18px; gap:16px; }
+  .wb-top{ gap:14px; }
+  .wb-panel .ab-vert{ display:none; }
+  .wb-panel{ grid-template-columns:1fr; padding:12px 8px; }
   .about-board{ grid-template-columns:1fr; }
   .grid-v{ grid-template-columns:repeat(2, 1fr); }
   .tiers{ grid-template-columns:1fr; }
@@ -649,8 +675,11 @@ footer{ padding:30px 0; border-top:1px solid var(--hairline); }
   .screen-bar{ gap:0 16px; }
   .bar-ver{ display:none; }
   .screen-bar{ justify-content:center; }
-  .grid-h{ grid-template-columns:1fr; }
-  .grid-h .card:nth-child(5){ width:100%; }
+  .work-board{ padding:14px; border-radius:24px; }
+  .wb-top{ grid-template-columns:1fr; }
+  .wb-grid{ grid-template-columns:1fr; padding:4px; }
+  .wb-grid .card-kind{ font-size:12px; }
+  .wb-grid .card-title{ font-size:17px; }
   .about-board{ padding:16px; border-radius:24px; }
   .ab-chip{ width:72px; height:60px; font-size:19px; }
   .ab-note{ padding:18px 18px; }

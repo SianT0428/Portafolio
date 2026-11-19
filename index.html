@@ -139,9 +139,35 @@
     <!-- HORIZONTAL -->
     <div class="format-block">
       <h3 class="format-label"><span class="pill" aria-hidden="true"></span><span data-i18n="fmt_h">Formato horizontal — YouTube / Streaming</span></h3>
-      <div class="grid-h">
+      <!-- Tablero: los 2 videos más pedidos (GTA 6 y Roblox) arriba y grandes; los otros 4 en un panel debajo. -->
+      <div class="work-board">
+        <div class="wb-top">
 
-        <!-- Vlog (empieza en el segundo 66). Las 5 tarjetas horizontales tienen el mismo tamaño. -->
+        <!-- Grand Theft Auto VI (YouTube) -->
+        <article class="card h big" data-yt="rtbdWkSjIjg" data-orientation="h">
+          <img class="thumb" src="images/gta-poster.jpg" alt="" width="960" height="540" loading="lazy" decoding="async">
+          <video class="preview" muted loop playsinline preload="none" aria-hidden="true"><source src="videos/horizontal-5.mp4" type="video/mp4"></video>
+          <div class="card-info"><span class="card-kind" data-i18n="k_gta">Gaming / Edit con HUD</span><span class="card-title" data-i18n="t_gta">Grand Theft Auto VI Gameplay</span></div>
+          <span class="card-tag">GTA 6</span>
+          <span class="play-btn" aria-hidden="true"></span>
+          <button type="button" class="card-hit" aria-label="Reproducir: Grand Theft Auto VI Gameplay"></button>
+        </article>
+
+        <article class="card h big" data-yt="RZzFjcCsNMg" data-orientation="h">
+          <img class="thumb" src="images/roblox-poster.jpg" alt="" width="960" height="540" loading="lazy" decoding="async">
+          <video class="preview" muted loop playsinline preload="none" aria-hidden="true"><source src="videos/horizontal-4.mp4" type="video/mp4"></video>
+          <div class="card-info"><span class="card-kind" data-i18n="k_roblox">Roblox / Gaming</span><span class="card-title" data-i18n="t_roblox">Roblox Gameplay</span></div>
+          <span class="card-tag">Roblox</span>
+          <span class="play-btn" aria-hidden="true"></span>
+          <button type="button" class="card-hit" aria-label="Reproducir: Roblox Gameplay"></button>
+        </article>
+
+        </div>
+
+        <div class="wb-panel">
+          <span class="ab-vert ab-vert-l" aria-hidden="true">SIAN T</span>
+          <div class="wb-grid">
+
         <article class="card h" data-yt="si0qEYB3FXY" data-start="66" data-orientation="h">
           <img class="thumb" src="https://i.ytimg.com/vi/si0qEYB3FXY/maxresdefault.jpg" alt="" width="1280" height="720" loading="lazy" decoding="async">
           <video class="preview" muted loop playsinline preload="none" aria-hidden="true"><source src="videos/preview-vlog.mp4" type="video/mp4"></video>
@@ -152,7 +178,6 @@
           <span class="play-btn" aria-hidden="true"></span>
           <button type="button" class="card-hit" aria-label="Reproducir el vlog «Fui al primer concierto de BTS en Colombia» desde el minuto 1:06"></button>
         </article>
-
 
         <article class="card h" data-yt="qArt4dEfN1M" data-orientation="h">
           <img class="thumb" src="https://i.ytimg.com/vi/qArt4dEfN1M/hqdefault.jpg" alt="" width="480" height="360" loading="lazy" decoding="async">
@@ -178,15 +203,9 @@
           <button type="button" class="card-hit" aria-label="Reproducir: Divulgación científica para 012-s"></button>
         </article>
 
-        <!-- Roblox Gameplay (YouTube) -->
-        <article class="card h" data-yt="RZzFjcCsNMg" data-orientation="h">
-          <img class="thumb" src="images/roblox-poster.jpg" alt="" width="960" height="540" loading="lazy" decoding="async">
-          <video class="preview" muted loop playsinline preload="none" aria-hidden="true"><source src="videos/horizontal-4.mp4" type="video/mp4"></video>
-          <div class="card-info"><span class="card-kind" data-i18n="k_roblox">Roblox / Gaming</span><span class="card-title" data-i18n="t_roblox">Roblox Gameplay</span></div>
-          <span class="play-btn" aria-hidden="true"></span>
-          <button type="button" class="card-hit" aria-label="Reproducir: Roblox Gameplay"></button>
-        </article>
-
+          </div>
+          <span class="ab-vert ab-vert-r" aria-hidden="true">SIAN T</span>
+        </div>
       </div>
     </div>
 
