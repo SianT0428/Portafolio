@@ -41,7 +41,7 @@ const EN = {
   h_tech:'Techniques & Tools', h_work:'My Work', work_sub:'A selection of recent projects in horizontal and vertical formats.',
   fmt_h:'Horizontal — YouTube / Streaming', fmt_v:'Vertical — TikTok / Instagram / Shorts',
   tag_feat:'Featured', k_vlog:'Vlog / event', t_bts:'I went to the first BTS concert in Colombia',
-  k_tutorial:'Tutorial', k_roblox:'Roblox / Gaming', t_roblox:'Editing test: Backrooms', k_stream:'Stream / Gaming', k_science:'Science explainer · 012-s', t_universe:'How will the universe end?',
+  k_tutorial:'Tutorial', k_roblox:'Roblox / Gaming', t_roblox:'Roblox Gameplay', k_stream:'Stream / Gaming', k_science:'Science explainer · 012-s', t_universe:'How will the universe end?',
   k_viral:'Viral clip', k_brand:'Brand reel', k_streamer:'Streamer short', ig_see:'View on Instagram ↗',
   h_prices:'Pricing', prices_sub:'Three editing levels. Price per video; the exact quote depends on your footage and references.',
   tier1:'Basic Edit', tier2:'Dynamic Edit', from:'from',
