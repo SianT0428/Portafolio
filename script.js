@@ -41,7 +41,7 @@ const EN = {
   h_tech:'Techniques & Tools', h_work:'My Work', work_sub:'A selection of recent projects in horizontal and vertical formats.',
   fmt_h:'Horizontal — YouTube / Streaming', fmt_v:'Vertical — TikTok / Instagram / Shorts',
   tag_feat:'Featured', k_vlog:'Vlog / event', t_bts:'I went to the first BTS concert in Colombia',
-  k_tutorial:'Tutorial', k_stream:'Stream / Gaming', k_science:'Science explainer · 012-s', t_universe:'How will the universe end?',
+  k_tutorial:'Tutorial', k_roblox:'Roblox / Gaming', t_roblox:'Editing test: Backrooms', k_stream:'Stream / Gaming', k_science:'Science explainer · 012-s', t_universe:'How will the universe end?',
   k_viral:'Viral clip', k_brand:'Brand reel', k_streamer:'Streamer short', ig_see:'View on Instagram ↗',
   h_prices:'Pricing', prices_sub:'Three editing levels. Price per video; the exact quote depends on your footage and references.',
   tier1:'Basic Edit', tier2:'Dynamic Edit', from:'from',
@@ -61,6 +61,7 @@ const EN = {
         '<li><b>Delivery</b> MP4 via Drive or WeTransfer once the remaining 50% is paid. Licensed music and SFX.</li>',
   pay_note:'Payments in USD via PayPal or Binance (clients in Colombia: COP via Nequi or Nu).',
   cta_quote:'Get a quote',
+  ab_sub:'Video editor · Creative director', ab_tools:'What I work with',
   about_lead:"A good video isn't just about looking good: <b>it's about keeping people watching until the end</b>.",
   about_body:"I'm <b>Santiago (SianT)</b>. I combine pacing, visual storytelling and sound design to take content from <b>creators</b> and <b>brands</b> to the next level, in long-form and on <b>TikTok and Instagram</b>.",
   st_videos:'Videos edited', st_rev:'Revision rounds included in every video', st_resp:'Average response time',
@@ -258,9 +259,19 @@ const outside = [...document.body.children].filter(el => el.id !== 'videoModal' 
 let lastTrigger = null;
 
 function openVideoModal(card, trigger){
-  const { yt, ig, start, orientation } = card.dataset;
-  let src, title;
-  if(yt){
+  const { yt, ig, start, orientation, video, poster } = card.dataset;
+  let src, title, player;
+  if(video){
+    // video propio (archivo del sitio): <video> nativo con controles
+    title = (card.querySelector('.card-title') || card.querySelector('.card-kind'))?.textContent || 'Video';
+    player = document.createElement('video');
+    player.src = video;
+    if(poster) player.poster = poster;
+    player.controls = true;
+    player.autoplay = true;
+    player.playsInline = true;
+    player.setAttribute('aria-label', title);
+  }else if(yt){
     const params = new URLSearchParams({ autoplay:'1', rel:'0', playsinline:'1' });
     if(start) params.set('start', start);
     src = `https://www.youtube-nocookie.com/embed/${yt}?${params}`;
@@ -270,13 +281,15 @@ function openVideoModal(card, trigger){
     title = 'Reel de Instagram';
   }else return;
 
-  const iframe = document.createElement('iframe');
-  iframe.src = src;
-  iframe.title = title;
-  iframe.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
-  iframe.referrerPolicy = 'strict-origin-when-cross-origin';
-  iframe.allowFullscreen = true;
-  modalPlayer.replaceChildren(iframe);
+  if(!player){
+    player = document.createElement('iframe');
+    player.src = src;
+    player.title = title;
+    player.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+    player.referrerPolicy = 'strict-origin-when-cross-origin';
+    player.allowFullscreen = true;
+  }
+  modalPlayer.replaceChildren(player);
 
   modalOut.hidden = !ig;
   if(ig) modalOut.href = `https://www.instagram.com/reel/${ig}/`;
@@ -294,7 +307,8 @@ function closeVideoModal(){
   if(videoModal.hidden) return;
   videoModal.classList.remove('open');
   videoModal.hidden = true;
-  modalPlayer.replaceChildren(); // quitar el iframe detiene la reproducción
+  modalPlayer.querySelector('video')?.pause();
+  modalPlayer.replaceChildren(); // quitar el iframe/video detiene la reproducción
   outside.forEach(el => el.inert = false);
   document.body.style.overflow = '';
   lastTrigger?.focus();
